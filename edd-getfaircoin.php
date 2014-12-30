@@ -18,12 +18,14 @@ function getfaircoin_textdomain() {
 }
 
 
+
+
+
 /**
 * Display fairaddress number field at checkout
 * Add more here if you need to
 */
-function getfaircoin_edd_display_checkout_fields() {
-// get user's fairaddress number if they already have one stored
+function getfaircoin_edd_display_checkout_fields() { // get user's fairaddress number if they already have one stored
   if ( is_user_logged_in() ) {
     $user_id = get_current_user_id();
     $fairaddress = get_the_author_meta( '_edd_user_fairaddress', $user_id );
@@ -52,7 +54,7 @@ function getfaircoin_edd_required_checkout_fields( $required_fields ) {
   $required_fields = array(
     'edd_fairaddress' => array(
       'error_id' => 'invalid_fairaddress',
-      'error_message' => __('Please enter a valid FAIR Address number', 'edd-getfaircoin')
+      'error_message' => __('Please enter a valid Faircoin Address', 'edd-getfaircoin')
     ),
   );
   return $required_fields;
@@ -66,7 +68,10 @@ add_filter( 'edd_purchase_form_required_fields', 'getfaircoin_edd_required_check
 */
 function getfaircoin_edd_validate_checkout_fields( $valid_data, $data ) {
   if ( empty( $data['edd_fairaddress'] ) ) {
-    edd_set_error( 'invalid_fairaddress', __('Please enter your fairaddress number.', 'edd-getfaircoin') );
+    edd_set_error( 'invalid_fairaddress', __('Please enter your Faircoin Address.', 'edd-getfaircoin') );
+  }
+  if ( strlen( $data['edd_fairaddress'] ) != 34 ) {
+    edd_set_error( 'invalid_fairaddress', __('Your Faircoin Address must have 34 digits', 'edd-getfaircoin') );
   }
 }
 add_action( 'edd_checkout_error_checks', 'getfaircoin_edd_validate_checkout_fields', 10, 2 );
@@ -90,9 +95,9 @@ function getfaircoin_edd_view_order_details( $payment_meta, $user_info ) {
   ?>
   <div class="column-container">
   <div class="column">
-  <strong><?php echo _e('FairAddress: ', 'edd-getfaircoin'); ?></strong>
+  <strong><?php echo _e('Faircoin Address: ', 'edd-getfaircoin'); ?></strong>
   <input type="text" name="edd_fairaddress" value="<?php esc_attr_e( $fairaddress ); ?>" class="medium-text" />
-  <p class="description"><?php _e( 'Customer FairAddress number', 'edd-getfaircoin' ); ?></p>
+  <p class="description"><?php _e( 'Customer Faircoin address', 'edd-getfaircoin' ); ?></p>
   </div>
   </div>
   <?php
@@ -118,7 +123,7 @@ add_action( 'edd_updated_edited_purchase', 'getfaircoin_edd_updated_edited_purch
 * Add a {fairaddress} tag for use in either the purchase receipt email or admin notification emails
 */
 if ( function_exists( 'edd_add_email_tag' ) ) {
-  edd_add_email_tag( 'fairaddress', 'Customer\'s FairAddress number', 'getfaircoin_edd_email_tag_fairaddress' );
+  edd_add_email_tag( 'fairaddress', 'Customer\'s Faircoin Address', 'getfaircoin_edd_email_tag_fairaddress' );
 }
 
 
@@ -166,7 +171,7 @@ function getfaircoin_edd_pre_update_user_profile( $user_id, $userdata ) {
   $fairaddress = isset( $_POST['edd_fairaddress'] ) ? $_POST['edd_fairaddress'] : '';
   // Make sure user enters a fairaddress number
   if ( ! $fairaddress ) {
-    edd_set_error( 'fairaddress_required', __( 'Please enter a FairAddress number', 'edd-getfaircoin' ) );
+    edd_set_error( 'fairaddress_required', __( 'Please enter a Faircoin Address', 'edd-getfaircoin' ) );
   }
   // update fairaddress number
   update_user_meta( $user_id, '_edd_user_fairaddress', $fairaddress );
@@ -178,10 +183,12 @@ add_action( 'edd_pre_update_user_profile', 'getfaircoin_edd_pre_update_user_prof
 * Add the FairAddress to the "Contact Info" section on the user's WP profile page
 */
 function getfaircoin_user_contactmethods( $methods, $user ) {
-  $methods['_edd_user_fairaddress'] = 'FairAddress';
+  $methods['_edd_user_fairaddress'] = 'Faircoin Address';
   return $methods;
 }
 add_filter( 'user_contactmethods', 'getfaircoin_user_contactmethods', 10, 2 );
+
+
 
 
 
