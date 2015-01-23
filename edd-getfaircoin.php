@@ -1,6 +1,17 @@
 <?php
 /**
 * Plugin Name: EDD GetFaircoin.net Fields and Rates
+<<<<<<< HEAD
+* Plugin URI: https://getfaircoin.net/
+* Description: This plugin adds user FAIR address and FairService checkbox fields in the checkout, shows actual faircoin price at homepage and aprox faircoin as user enters his fiat amount, and now also shows a reference in many other fiat currencies other than euro. Requires edd-currency-converter and edd-custom-prices.
+* Author: Bumbum
+* Version: 0.3
+* Author URI: https://github.com/bum2/
+*/
+
+### Version
+define( 'EDD_GETFAIRCOIN_VERSION', 0.3 );
+=======
 * Plugin URI: http://getfaircoin.net/
 * Description: This plugin adds user FAIR address field in the checkout and will try to show actual faircoin price calling exchanges api's in realtime
 * Author: Bumbum
@@ -10,6 +21,7 @@
 
 ### Version
 define( 'EDD_GETFAIRCOIN_VERSION', 0.2 );
+>>>>>>> f9f47331a3809eea9764830d2ad06b9417fe40a3
 
 ### Create Text Domain For Translations
 add_action( 'plugins_loaded', 'getfaircoin_textdomain' );
@@ -178,9 +190,44 @@ add_filter( 'edd_purchase_link_top', 'getfaircoin_show_rate' );
 
 function getfaircoin_price($price){
   global $edd_options;
+<<<<<<< HEAD
+  if( $price == 0 ) {
+    //echo '<span class="edd_price">'.number_format($edd_options['faircoin_price'], 0, '.', ',').' faircoins =</span>';
+    $price = 1;
+    return '1€ = '.number_format($edd_options['faircoin_price'], 0, '.', ',').' fair';
+  } //else if( count( split(' ', $price) ) > 1) {
+    //echo "count( split(' ', $price) ) > 1 !! ".$price;
+    //return 1;//edd_format_amount( $price );//;
+  //} else {
+  //  return count( split(' ', $price) );//$price;//edd_format_amount($edd_options['faircoin_price']).' faircoins = 1';
+  //}
+}
+add_filter( 'edd_download_price', 'getfaircoin_price', 10);
+
+function getfaircoin_currency_filter($price){
+  //global $edd_options;
+  //print count( split(' ', $price) );
+  if( count( split(' ', $price) ) > 1){//return number_format(1, 0, '.', ',');
+     return str_replace('&euro;', '', $price);
+  } else {
+     return $price;
+  }
+}
+add_filter( 'edd_eur_currency_filter_after', 'getfaircoin_currency_filter' );
+
+//// Menu items, not used now
+function getfair_currency_menu_item( $item ) {
+  if($item->title == 'Your Currency'){
+    $item->title = 'from: '.edd_currency_get_stored_currency();
+  }
+  return $item;
+}
+//add_filter( 'wp_setup_nav_menu_item', 'getfair_currency_menu_item' );
+=======
   return number_format($edd_options['faircoin_price'], 0, '.', ',').' faircoins = 1';//edd_format_amount($edd_options['faircoin_price']).' faircoins = 1';
 }
 add_filter( 'edd_download_price', 'getfaircoin_price');
+>>>>>>> f9f47331a3809eea9764830d2ad06b9417fe40a3
 
 ////
 
