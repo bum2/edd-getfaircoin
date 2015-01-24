@@ -1,7 +1,6 @@
 <?php
 /**
 * Plugin Name: EDD GetFaircoin.net Fields and Rates
-<<<<<<< HEAD
 * Plugin URI: https://getfaircoin.net/
 * Description: This plugin adds user FAIR address and FairService checkbox fields in the checkout, shows actual faircoin price at homepage and aprox faircoin as user enters his fiat amount, and now also shows a reference in many other fiat currencies other than euro. Requires edd-currency-converter and edd-custom-prices.
 * Author: Bumbum
@@ -11,17 +10,7 @@
 
 ### Version
 define( 'EDD_GETFAIRCOIN_VERSION', 0.3 );
-=======
-* Plugin URI: http://getfaircoin.net/
-* Description: This plugin adds user FAIR address field in the checkout and will try to show actual faircoin price calling exchanges api's in realtime
-* Author: Bumbum
-* Version: 0.2
-* Author URI: http://github.com/bum2/
-*/
 
-### Version
-define( 'EDD_GETFAIRCOIN_VERSION', 0.2 );
->>>>>>> f9f47331a3809eea9764830d2ad06b9417fe40a3
 
 ### Create Text Domain For Translations
 add_action( 'plugins_loaded', 'getfaircoin_textdomain' );
@@ -190,7 +179,6 @@ add_filter( 'edd_purchase_link_top', 'getfaircoin_show_rate' );
 
 function getfaircoin_price($price){
   global $edd_options;
-<<<<<<< HEAD
   if( $price == 0 ) {
     //echo '<span class="edd_price">'.number_format($edd_options['faircoin_price'], 0, '.', ',').' faircoins =</span>';
     $price = 1;
@@ -223,11 +211,6 @@ function getfair_currency_menu_item( $item ) {
   return $item;
 }
 //add_filter( 'wp_setup_nav_menu_item', 'getfair_currency_menu_item' );
-=======
-  return number_format($edd_options['faircoin_price'], 0, '.', ',').' faircoins = 1';//edd_format_amount($edd_options['faircoin_price']).' faircoins = 1';
-}
-add_filter( 'edd_download_price', 'getfaircoin_price');
->>>>>>> f9f47331a3809eea9764830d2ad06b9417fe40a3
 
 ////
 
@@ -522,7 +505,7 @@ function getfaircoin_edd_required_checkout_fields( $required_fields ) {
   $fairsaving = get_the_author_meta( '_edd_user_fairsaving', $user_id );
   if($fairsaving == '1'){
 
-  } else {   
+  } else {
     $required_fields = array(
         'edd_fairaddress' => array(
           'error_id' => 'invalid_fairaddress',
@@ -544,10 +527,10 @@ function getfaircoin_edd_validate_checkout_fields( $valid_data, $data ) {
   $fairsaving = get_the_author_meta( '_edd_user_fairsaving', $user_id );
   if($fairsaving === '1'){
     //
-  } else { 
+  } else {
     if( isset( $data['edd_fairsaving'] ) ){
       update_user_meta( $user_id, '_edd_user_fairsaving', $data['edd_fairsaving'] );
-      if( $data['edd_fairsaving'] === '0') {     
+      if( $data['edd_fairsaving'] === '0') {
         if ( empty( $data['edd_fairaddress'] ) ) {
           edd_set_error( 'invalid_fairaddress', __('Please enter your Faircoin Address.', 'edd-getfaircoin') );
         } else if ( !empty( $data['edd_fairaddress']) && strlen( $data['edd_fairaddress'] ) != 34 ) {

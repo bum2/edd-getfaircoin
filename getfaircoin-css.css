@@ -25,12 +25,11 @@ h1.site-title a:focus {
 h1.page-title {
   margin-top: 20px;
 }
-<<<<<<< HEAD
+
 .site-main .content-grid-download .entry-title {
   font-size: 18px;
 }
-=======
->>>>>>> f9f47331a3809eea9764830d2ad06b9417fe40a3
+
 .entry-content p {
   margin-bottom: 0.7em;
 }
@@ -54,18 +53,17 @@ h1.page-title {
   color: #fff;
   margin-right: 2px;
 }
-<<<<<<< HEAD
+
 .logo-exc {
-  color: rgb(210,70,70);
+  /* color: rgb(210,70,70); */
 }
-=======
->>>>>>> f9f47331a3809eea9764830d2ad06b9417fe40a3
+
 
 .header-outer .entry-page-title {
   padding-bottom: 40px;
 }
 
-<<<<<<< HEAD
+
 .edd-cp-container {
   font-size: 1.2em;
 }
@@ -75,7 +73,7 @@ h1.page-title {
 
 
 /*  Custom SECTION TITLE  */
- 
+
 .site-main .section-title span {
   color: rgb(97, 119, 130);
 }
@@ -120,8 +118,7 @@ h1.page-title {
   100% {
     transform: rotate(-359deg); } }
 
-=======
->>>>>>> f9f47331a3809eea9764830d2ad06b9417fe40a3
+
 
 .site-footer .site-info a {
   color: rgb(255,230,120);
@@ -139,27 +136,24 @@ h1.page-title {
     -ms-filter: "FlipH";
 }
 
-<<<<<<< HEAD
 .header-search-icon {
   display: none;
 }
-=======
->>>>>>> f9f47331a3809eea9764830d2ad06b9417fe40a3
+
+
 @media screen and (min-width:992px)
 {
-.site-footer .site-info .col-md-4 {
-    width: 66.6666%;
-}
-.site-footer .site-info .col-md-8 {
-    width: 33.3333%;
-}
-<<<<<<< HEAD
+  .site-footer .site-info .col-md-4 {
+      width: 66.6666%;
+  }
+  .site-footer .site-info .col-md-8 {
+      width: 33.3333%;
+  }
 
-.main-navigation.toggled .search-form {
-  display: none;
-}
-=======
->>>>>>> f9f47331a3809eea9764830d2ad06b9417fe40a3
+  .main-navigation.toggled .search-form {
+    display: none;
+  }
+
 }
 
 .content-grid-download .overlay strong.item-price {
@@ -185,8 +179,4 @@ h2.comments-title span {
 }
 .edd_purchase_receipt_files {
   display: none;
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> f9f47331a3809eea9764830d2ad06b9417fe40a3
