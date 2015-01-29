@@ -26,9 +26,6 @@ h1.page-title {
   margin-top: 20px;
 }
 
-.site-main .content-grid-download .entry-title {
-  font-size: 18px;
-}
 
 .entry-content p {
   margin-bottom: 0.7em;
@@ -55,7 +52,7 @@ h1.page-title {
 }
 
 .logo-exc {
-  /* color: rgb(210,70,70); */
+  color: #fff; /* #e33; rgb(210,70,70); */
 }
 
 
@@ -84,7 +81,9 @@ h1.page-title {
 .section-title .edd-currency-wrap input {
   display: none;
 }
-
+.section-title select.edd-currencies-select {
+  border: 1px solid #bdc3c7;
+}
 .section-title .edd-icon-spin {
   display: none; /*inline-block;*/
   -moz-animation: edd-icon-spinb 2s infinite linear;
@@ -119,6 +118,7 @@ h1.page-title {
     transform: rotate(-359deg); } }
 
 
+/**** FOOTER ****/
 
 .site-footer .site-info a {
   color: rgb(255,230,120);
@@ -136,10 +136,11 @@ h1.page-title {
     -ms-filter: "FlipH";
 }
 
+
+/***** HIDE SEARCH ******/
 .header-search-icon {
   display: none;
 }
-
 
 @media screen and (min-width:992px)
 {
@@ -156,6 +157,18 @@ h1.page-title {
 
 }
 
+
+/**** home grid tunes ****/
+.site-main .content-grid-download .entry-title {
+  font-size: 18px;
+}
+.site-main .content-grid-download.truncate-title .entry-title {
+  height: 24px;
+}
+
+.content-grid-download .byline {
+  display: none;
+}
 .content-grid-download .overlay strong.item-price {
   display: none;
 }

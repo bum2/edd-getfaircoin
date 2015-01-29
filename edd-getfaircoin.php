@@ -424,7 +424,7 @@ add_filter('edd_purchase_link_defaults', 'getfaircoin_purchase_link_defaults');
 
 ////
 
-function getfaircoin_edd_unset_paypal_gateway( $gateway_list ) {
+function getfaircoin_edd_unset_other_gateways( $gateway_list ) {
   $download_ids = edd_get_cart_contents();
   if ( ! $download_ids )
     return $gateway_list;
@@ -433,27 +433,32 @@ function getfaircoin_edd_unset_paypal_gateway( $gateway_list ) {
   if ( $download_ids ) {
     foreach ( $download_ids as $id ) {
       if ( has_term( 'Paypal', 'download_category', $id ) ) {
-	//var_dump($gateway_list);
-	$gateway_manual = $gateway_list['transfer'];
+	      //var_dump($gateway_list);
+	      $gateway_manual = $gateway_list['transfer'];
         unset( $gateway_list['transfer'] );
-	unset( $gateway_list['localnode'] );
-	//if(isset($gateway_paypal) && !$gateway_list['paypal']){
-	//  $gateway_list['paypal'] = $gateway_paypal;
-	//}
+	      unset( $gateway_list['localnode'] );
+	      //if(isset($gateway_paypal) && !$gateway_list['paypal']){
+	      //  $gateway_list['paypal'] = $gateway_paypal;
+	      //}
       }
       if ( has_term( 'Transfer', 'download_category', $id ) ) {
-	$gateway_paypal = $gateway_list['paypal'];
+	      $gateway_paypal = $gateway_list['paypal'];
         unset( $gateway_list['paypal'] );
-	unset( $gateway_list['localnode'] );
-	//if(isset($gateway_manual) && !$gateway_list['transfer']){
-	//  $gateway_list['transfer'] = $gateway_manual;
-	//}
+	      unset( $gateway_list['localnode'] );
+	      //if(isset($gateway_manual) && !$gateway_list['transfer']){
+	      //  $gateway_list['transfer'] = $gateway_manual;
+	      //}
+      }
+      if ( has_term( 'LocalNode', 'download_category', $id ) ) {
+	      $gateway_paypal = $gateway_list['paypal'];
+        unset( $gateway_list['paypal'] );
+	      unset( $gateway_list['transfer'] );
       }
     }
   }
   return $gateway_list;
 }
-add_filter( 'edd_enabled_payment_gateways', 'getfaircoin_edd_unset_paypal_gateway' );
+add_filter( 'edd_enabled_payment_gateways', 'getfaircoin_edd_unset_other_gateways' );
 
 
 
