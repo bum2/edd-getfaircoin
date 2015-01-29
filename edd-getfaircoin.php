@@ -1,15 +1,16 @@
 <?php
 /**
 * Plugin Name: EDD GetFaircoin.net Fields and Rates
-* Plugin URI: http://getfaircoin.net/
-* Description: This plugin adds user FAIR address field in the checkout and will try to show actual faircoin price calling exchanges api's in realtime
+* Plugin URI: https://getfaircoin.net/
+* Description: This plugin adds user FAIR address and FairService checkbox fields in the checkout, shows actual faircoin price at homepage and aprox faircoin as user enters his fiat amount, and now also shows a reference in many other fiat currencies other than euro. Requires edd-currency-converter and edd-custom-prices.
 * Author: Bumbum
-* Version: 0.2
-* Author URI: http://github.com/bum2/
+* Version: 0.3
+* Author URI: https://github.com/bum2/
 */
 
 ### Version
-define( 'EDD_GETFAIRCOIN_VERSION', 0.2 );
+define( 'EDD_GETFAIRCOIN_VERSION', 0.3 );
+
 
 ### Create Text Domain For Translations
 add_action( 'plugins_loaded', 'getfaircoin_textdomain' );
@@ -178,9 +179,38 @@ add_filter( 'edd_purchase_link_top', 'getfaircoin_show_rate' );
 
 function getfaircoin_price($price){
   global $edd_options;
-  return edd_format_amount($edd_options['faircoin_price']).' faircoins = 1';
+  if( $price == 0 ) {
+    //echo '<span class="edd_price">'.number_format($edd_options['faircoin_price'], 0, '.', ',').' faircoins =</span>';
+    $price = 1;
+    return '1€ = '.number_format($edd_options['faircoin_price'], 0, '.', ',').' fair';
+  } //else if( count( split(' ', $price) ) > 1) {
+    //echo "count( split(' ', $price) ) > 1 !! ".$price;
+    //return 1;//edd_format_amount( $price );//;
+  //} else {
+  //  return count( split(' ', $price) );//$price;//edd_format_amount($edd_options['faircoin_price']).' faircoins = 1';
+  //}
 }
-add_filter( 'edd_download_price', 'getfaircoin_price');
+add_filter( 'edd_download_price', 'getfaircoin_price', 10);
+
+function getfaircoin_currency_filter($price){
+  //global $edd_options;
+  //print count( split(' ', $price) );
+  if( count( split(' ', $price) ) > 1){//return number_format(1, 0, '.', ',');
+     return str_replace('&euro;', '', $price);
+  } else {
+     return $price;
+  }
+}
+add_filter( 'edd_eur_currency_filter_after', 'getfaircoin_currency_filter' );
+
+//// Menu items, not used now
+function getfair_currency_menu_item( $item ) {
+  if($item->title == 'Your Currency'){
+    $item->title = 'from: '.edd_currency_get_stored_currency();
+  }
+  return $item;
+}
+//add_filter( 'wp_setup_nav_menu_item', 'getfair_currency_menu_item' );
 
 ////
 
@@ -394,7 +424,7 @@ add_filter('edd_purchase_link_defaults', 'getfaircoin_purchase_link_defaults');
 
 ////
 
-function getfaircoin_edd_unset_paypal_gateway( $gateway_list ) {
+function getfaircoin_edd_unset_other_gateways( $gateway_list ) {
   $download_ids = edd_get_cart_contents();
   if ( ! $download_ids )
     return $gateway_list;
@@ -403,27 +433,32 @@ function getfaircoin_edd_unset_paypal_gateway( $gateway_list ) {
   if ( $download_ids ) {
     foreach ( $download_ids as $id ) {
       if ( has_term( 'Paypal', 'download_category', $id ) ) {
-	//var_dump($gateway_list);
-	$gateway_manual = $gateway_list['transfer'];
+	      //var_dump($gateway_list);
+	      $gateway_manual = $gateway_list['transfer'];
         unset( $gateway_list['transfer'] );
-	unset( $gateway_list['localnode'] );
-	//if(isset($gateway_paypal) && !$gateway_list['paypal']){
-	//  $gateway_list['paypal'] = $gateway_paypal;
-	//}
+	      unset( $gateway_list['localnode'] );
+	      //if(isset($gateway_paypal) && !$gateway_list['paypal']){
+	      //  $gateway_list['paypal'] = $gateway_paypal;
+	      //}
       }
       if ( has_term( 'Transfer', 'download_category', $id ) ) {
-	$gateway_paypal = $gateway_list['paypal'];
+	      $gateway_paypal = $gateway_list['paypal'];
         unset( $gateway_list['paypal'] );
-	unset( $gateway_list['localnode'] );
-	//if(isset($gateway_manual) && !$gateway_list['transfer']){
-	//  $gateway_list['transfer'] = $gateway_manual;
-	//}
+	      unset( $gateway_list['localnode'] );
+	      //if(isset($gateway_manual) && !$gateway_list['transfer']){
+	      //  $gateway_list['transfer'] = $gateway_manual;
+	      //}
+      }
+      if ( has_term( 'LocalNode', 'download_category', $id ) ) {
+	      $gateway_paypal = $gateway_list['paypal'];
+        unset( $gateway_list['paypal'] );
+	      unset( $gateway_list['transfer'] );
       }
     }
   }
   return $gateway_list;
 }
-add_filter( 'edd_enabled_payment_gateways', 'getfaircoin_edd_unset_paypal_gateway' );
+add_filter( 'edd_enabled_payment_gateways', 'getfaircoin_edd_unset_other_gateways' );
 
 
 
@@ -473,7 +508,7 @@ add_action( 'edd_purchase_form_user_info', 'getfaircoin_edd_display_checkout_fie
 function getfaircoin_edd_required_checkout_fields( $required_fields ) {
   $user_id = get_current_user_id();
   $fairsaving = get_the_author_meta( '_edd_user_fairsaving', $user_id );
-  if($fairsaving){
+  if($fairsaving == '1'){
 
   } else {
     $required_fields = array(
@@ -496,9 +531,9 @@ function getfaircoin_edd_validate_checkout_fields( $valid_data, $data ) {
   $user_id = get_current_user_id();
   $fairsaving = get_the_author_meta( '_edd_user_fairsaving', $user_id );
   if($fairsaving === '1'){
-
+    //
   } else {
-    if( $data['edd_fairsaving'] ){
+    if( isset( $data['edd_fairsaving'] ) ){
       update_user_meta( $user_id, '_edd_user_fairsaving', $data['edd_fairsaving'] );
       if( $data['edd_fairsaving'] === '0') {
         if ( empty( $data['edd_fairaddress'] ) ) {
@@ -506,8 +541,10 @@ function getfaircoin_edd_validate_checkout_fields( $valid_data, $data ) {
         } else if ( !empty( $data['edd_fairaddress']) && strlen( $data['edd_fairaddress'] ) != 34 ) {
           edd_set_error( 'invalid_fairaddress', __('Your Faircoin Address must have 34 digits', 'edd-getfaircoin') );
         }
+      } else if( $data['edd_fairsaving'] == '1'){
+	//
       } else {
-        //edd_set_error( 'invalid_fairaddress', __('X', 'edd-getfaircoin') );
+        edd_set_error( 'invalid_fairaddress', $data['edd_fairsaving']+'' );
       }
     }
   }
@@ -519,7 +556,7 @@ add_action( 'edd_checkout_error_checks', 'getfaircoin_edd_validate_checkout_fiel
 * Store the custom field data into EDD's payment meta
 */
 function getfaircoin_edd_store_custom_fields( $payment_meta ) {
-  $payment_meta['fairsaving'] = isset( $_POST['edd_fairsaving'] ) ? $_POST['edd_fairsaving'] : 0;
+  $payment_meta['fairsaving'] = isset( $_POST['edd_fairsaving'] ) ? sanitize_text_field( $_POST['edd_fairsaving'] ) : '0';
   $payment_meta['fairaddress'] = isset( $_POST['edd_fairaddress'] ) ? sanitize_text_field( $_POST['edd_fairaddress'] ) : '';
   return $payment_meta;
 }
@@ -570,6 +607,7 @@ add_action( 'edd_updated_edited_purchase', 'getfaircoin_edd_updated_edited_purch
 */
 if ( function_exists( 'edd_add_email_tag' ) ) {
   edd_add_email_tag( 'fairaddress', 'Customer\'s Faircoin Address', 'getfaircoin_edd_email_tag_fairaddress' );
+  edd_add_email_tag( 'fairsaving', 'Customer\'s FairSaving Choice', 'getfaircoin_edd_email_tag_fairsaving' );
 }
 
 
@@ -581,6 +619,17 @@ function getfaircoin_edd_email_tag_fairaddress( $payment_id ) {
   return $payment_data['fairaddress'];
 }
 
+/**
+* The {fairsaving} email tag
+*/
+function getfaircoin_edd_email_tag_fairsaving( $payment_id ) {
+  $payment_data = edd_get_payment_meta( $payment_id );
+  if($payment_data['fairsaving'] == '1') {
+    return __('FairSaving Active', 'edd-getfaircoin'); //$payment_data['fairsaving'];
+  } else {
+    return '';
+  }
+}
 
 /**
 * Update user's fairaddress number in the wp_usermeta table
@@ -617,7 +666,7 @@ add_action( 'edit_user_profile_update', 'getfaircoin_edd_save_extra_profile_fiel
 */
 function getfaircoin_edd_pre_update_user_profile( $user_id, $userdata ) {
   $fairaddress = isset( $_POST['edd_fairaddress'] ) ? $_POST['edd_fairaddress'] : '';
-  $fairsaving = isset( $_POST['edd_fairsaving'] ) ? $_POST['edd_fairsaving'] : 0;
+  $fairsaving = isset( $_POST['edd_fairsaving'] ) ? $_POST['edd_fairsaving'] : '0';
   // Make sure user enters a fairaddress number
   if ( ! $fairsaving && ! $fairaddress ) {
     edd_set_error( 'fairaddress_required', __( 'Please enter a Faircoin Address', 'edd-getfaircoin' ) );
