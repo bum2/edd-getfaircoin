@@ -193,7 +193,6 @@ function getfaircoin_price($price){
 add_filter( 'edd_download_price', 'getfaircoin_price', 10);
 
 function getfaircoin_currency_filter($price){
-  //global $edd_options;
   //print count( split(' ', $price) );
   if( count( split(' ', $price) ) > 1){//return number_format(1, 0, '.', ',');
      return str_replace('&euro;', '', $price);
@@ -437,17 +436,11 @@ function getfaircoin_edd_unset_other_gateways( $gateway_list ) {
 	      $gateway_manual = $gateway_list['transfer'];
         unset( $gateway_list['transfer'] );
 	      unset( $gateway_list['localnode'] );
-	      //if(isset($gateway_paypal) && !$gateway_list['paypal']){
-	      //  $gateway_list['paypal'] = $gateway_paypal;
-	      //}
       }
       if ( has_term( 'Transfer', 'download_category', $id ) ) {
 	      $gateway_paypal = $gateway_list['paypal'];
         unset( $gateway_list['paypal'] );
 	      unset( $gateway_list['localnode'] );
-	      //if(isset($gateway_manual) && !$gateway_list['transfer']){
-	      //  $gateway_list['transfer'] = $gateway_manual;
-	      //}
       }
       if ( has_term( 'LocalNode', 'download_category', $id ) ) {
 	      $gateway_localnode = $gateway_list['localnode'];
@@ -506,21 +499,10 @@ add_action( 'edd_purchase_form_user_info', 'getfaircoin_edd_display_checkout_fie
 * Add more required fields here if you need to
 */
 function getfaircoin_edd_required_checkout_fields( $required_fields ) {
-  /*if ( is_user_logged_in() ) {
-    $user_id = get_current_user_id();
-    $fairsaving = get_the_author_meta( '_edd_user_fairsaving', $user_id );
-  } else {
-
-  }
-  if($fairsaving == '1'){
-
-  } else {*/
-    $required_fields['edd_fairaddress'] = array(
-          'error_id' => 'invalid_fairaddress',
-          'error_message' => __('Please enter a valid Faircoin Address', 'edd-getfaircoin')
-  	//),
-    );
-  //}
+  $required_fields['edd_fairaddress'] = array(
+    'error_id' => 'invalid_fairaddress',
+    'error_message' => __('Please enter a valid Faircoin Address', 'edd-getfaircoin')
+  );
   return $required_fields;
 }
 add_filter( 'edd_purchase_form_required_fields', 'getfaircoin_edd_required_checkout_fields' );
@@ -689,91 +671,3 @@ function getfaircoin_user_contactmethods( $methods, $user ) {
   return $methods;
 }
 add_filter( 'user_contactmethods', 'getfaircoin_user_contactmethods', 10, 2 );
-
-
-
-
-
-
-/*
-
-class RecentGroupDocsWidget extends WP_Widget {
-  function RecentGroupDocsWidget()
-  {
-    $widget_ops = array('classname' => 'RecentGroupDocsWidget', 'description' => 'Displays a recent group docs list (if any)' );
-    $this->WP_Widget('RecentGroupDocsWidget', 'Recent Group Docs', $widget_ops);
-  }
-
-  function form($instance)
-  {
-    $instance = wp_parse_args( (array) $instance, array( 'title' => '', 'max' => 10 ) );
-    $title = $instance['title'];
-    $max = $instance['max'];
-?>
-  <p><label for="<?php echo $this->get_field_id('title'); ?>">Title: <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo attribute_escape($title); ?>" /></label></p>
-  <p><label for="<?php echo $this->get_field_id('max'); ?>">How many? (maximum): &nbsp; <input class="widefat" id="<?php echo $this->get_field_id('max'); ?>" name="<?php echo $this->get_field_name('max'); ?>" type="text" style="text-align:center;width:60px;" maxlength="2" value="<?php echo $max ?>" /></label></p>
-<?php
-  }
-
-  function update($new_instance, $old_instance)
-  {
-    $instance = $old_instance;
-    $instance['title'] = $new_instance['title'];
-    $instance['max'] = $new_instance['max'];
-    return $instance;
-  }
-
-  function widget($args, $instance)
-  {
-    extract($args, EXTR_SKIP);
-
-    echo $before_widget;
-    $title = empty($instance['title']) ? ' ' : apply_filters('widget_title', $instance['title']);
-    $max = empty($instance['max']) ? 10 : $instance['max'];
-
-    global $bp, $wpdb;
-
-    if (isset($bp->groups->current_group->id)) {
-      $output = "
-
-        <ul class='recent-group-docs'>";
-        $doc_list = $wpdb->get_results( "
-        SELECT ID, post_name
-        FROM wp_posts
-        WHERE post_type = 'bp_doc' and ID
-        IN (
-                SELECT object_id
-                FROM wp_term_relationships
-                WHERE term_taxonomy_id = (
-                        SELECT term_taxonomy_id
-                        FROM wp_term_taxonomy
-                        WHERE term_id = (
-                                SELECT term_id FROM wp_terms WHERE slug = 'bp_docs_associated_group_".$bp->groups->current_group->id."'
-                        )
-                )
-        )
-        ORDER BY post_modified DESC
-        LIMIT 0 , ".$max );
-
-        foreach ($doc_list as $doc){
-          $output .= "
-          <li class='bp_group type-bp_group bp_doc type-bp_doc no-post-thumbnail'><a href=".get_permalink($doc->ID) . " title=”" . get_the_title($doc->ID) . "”><div class='title'>" . get_the_title($doc->ID) . "
-          </div></a></li>
-          ";
-        }
-        $output .= "</ul>
-
-      ";
-      if (count($doc_list) > 0){
-        if (!empty($title))
-          echo $before_title . $title . $after_title;;
-        echo $output;
-      }
-   }
-
-    echo $after_widget;
-  }
-
-}
-add_action( 'widgets_init', create_function('', 'return register_widget("RecentGroupDocsWidget");') );
-*/
