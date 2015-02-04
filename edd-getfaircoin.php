@@ -19,7 +19,7 @@ function getfaircoin_textdomain() {
 }
 
 
-### Function: Enqueue Polls JavaScripts/CSS
+### Function: Enqueue JavaScripts/CSS
 add_action('wp_enqueue_scripts', 'getfaircoin_scripts');
 function getfaircoin_scripts() {
 	if(@file_exists(get_stylesheet_directory().'/getfaircoin-css.css')) {
@@ -450,7 +450,7 @@ function getfaircoin_edd_unset_other_gateways( $gateway_list ) {
 	      //}
       }
       if ( has_term( 'LocalNode', 'download_category', $id ) ) {
-	      $gateway_paypal = $gateway_list['paypal'];
+	      $gateway_localnode = $gateway_list['localnode'];
         unset( $gateway_list['paypal'] );
 	      unset( $gateway_list['transfer'] );
       }
@@ -478,7 +478,7 @@ function getfaircoin_edd_display_checkout_fields() { // get user's fairaddress n
   $fairsaving = isset( $fairsaving ) ? esc_attr( $fairsaving ) : '0';
   ?>
   <p id="edd-fairsaving-wrap">
-    <label class="edd-label" for="edd-fairsaving">
+    <label class="edd-label" for="edd_fairsaving">
       <?php echo _e('FairSaving Service', 'edd-getfaircoin'); ?>
     </label>
     <span class="edd-description">
@@ -488,7 +488,7 @@ function getfaircoin_edd_display_checkout_fields() { // get user's fairaddress n
     <br />
   </p>
   <p id="edd-fairaddress-wrap">
-    <label class="edd-label" for="edd-fairaddress">
+    <label class="edd-label" for="edd_fairaddress">
       <?php echo _e('Faircoin Address', 'edd-getfaircoin'); ?>
     </label>
     <span class="edd-description">
@@ -506,18 +506,21 @@ add_action( 'edd_purchase_form_user_info', 'getfaircoin_edd_display_checkout_fie
 * Add more required fields here if you need to
 */
 function getfaircoin_edd_required_checkout_fields( $required_fields ) {
-  $user_id = get_current_user_id();
-  $fairsaving = get_the_author_meta( '_edd_user_fairsaving', $user_id );
+  /*if ( is_user_logged_in() ) {
+    $user_id = get_current_user_id();
+    $fairsaving = get_the_author_meta( '_edd_user_fairsaving', $user_id );
+  } else {
+
+  }
   if($fairsaving == '1'){
 
-  } else {
-    $required_fields = array(
-        'edd_fairaddress' => array(
+  } else {*/
+    $required_fields['edd_fairaddress'] = array(
           'error_id' => 'invalid_fairaddress',
           'error_message' => __('Please enter a valid Faircoin Address', 'edd-getfaircoin')
-  	),
+  	//),
     );
-  }
+  //}
   return $required_fields;
 }
 add_filter( 'edd_purchase_form_required_fields', 'getfaircoin_edd_required_checkout_fields' );
@@ -528,25 +531,24 @@ add_filter( 'edd_purchase_form_required_fields', 'getfaircoin_edd_required_check
 * You can do additional error checking here if required
 */
 function getfaircoin_edd_validate_checkout_fields( $valid_data, $data ) {
-  $user_id = get_current_user_id();
-  $fairsaving = get_the_author_meta( '_edd_user_fairsaving', $user_id );
-  if($fairsaving === '1'){
+  if( !isset($data['edd_fairsaving']) ) $data['edd_fairsaving'] = '0';
+  if ( is_user_logged_in() ) {
+    $user_id = get_current_user_id();
+    update_user_meta( $user_id, '_edd_user_fairsaving', $data['edd_fairsaving'] );
+  } else {
+
+  }
+  $fairsaving = $data['edd_fairsaving'];
+  if( $fairsaving === '0') {
+    if ( empty( $data['edd_fairaddress'] ) ) {
+      edd_set_error( 'invalid_fairaddress', __('Please enter your Faircoin Address.', 'edd-getfaircoin') );
+    } else if ( strlen( $data['edd_fairaddress'] ) != 34 ) {
+      edd_set_error( 'invalid_fairaddress', __('Your Faircoin Address must have 34 digits', 'edd-getfaircoin') );
+    }
+  } else if( $fairsaving == '1'){
     //
   } else {
-    if( isset( $data['edd_fairsaving'] ) ){
-      update_user_meta( $user_id, '_edd_user_fairsaving', $data['edd_fairsaving'] );
-      if( $data['edd_fairsaving'] === '0') {
-        if ( empty( $data['edd_fairaddress'] ) ) {
-          edd_set_error( 'invalid_fairaddress', __('Please enter your Faircoin Address.', 'edd-getfaircoin') );
-        } else if ( !empty( $data['edd_fairaddress']) && strlen( $data['edd_fairaddress'] ) != 34 ) {
-          edd_set_error( 'invalid_fairaddress', __('Your Faircoin Address must have 34 digits', 'edd-getfaircoin') );
-        }
-      } else if( $data['edd_fairsaving'] == '1'){
-	//
-      } else {
-        edd_set_error( 'invalid_fairaddress', $data['edd_fairsaving']+'' );
-      }
-    }
+    edd_set_error( 'invalid_fairaddress', $fairsaving+'' );
   }
 }
 add_action( 'edd_checkout_error_checks', 'getfaircoin_edd_validate_checkout_fields', 10, 2 );
@@ -577,7 +579,7 @@ function getfaircoin_edd_view_order_details( $payment_meta, $user_info ) {
       <p class="description"><?php _e( 'Customer FairSaving choice', 'edd-getfaircoin' ); ?></p>
     </div>
     <div class="column">
-      <strong><?php echo _e('Faircoin Address: ', 'edd-getfaircoin'); ?></strong>
+      <strong><?php echo _e('FaircoinAddress: ', 'edd-getfaircoin'); ?></strong>
       <input type="text" name="edd_fairaddress" value="<?php esc_attr_e( $fairaddress ); ?>" class="medium-text" />
       <p class="description"><?php _e( 'Customer Faircoin address', 'edd-getfaircoin' ); ?></p>
     </div>

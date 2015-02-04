@@ -52,7 +52,7 @@ h1.page-title {
 }
 
 .logo-exc {
-  color: #fff; /* #e33; rgb(210,70,70); */
+  color: #fff; /* rgb(210,70,70); */
 }
 
 
@@ -84,6 +84,7 @@ h1.page-title {
 .section-title select.edd-currencies-select {
   border: 1px solid #bdc3c7;
 }
+
 .section-title .edd-icon-spin {
   display: none; /*inline-block;*/
   -moz-animation: edd-icon-spinb 2s infinite linear;

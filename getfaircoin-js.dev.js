@@ -1,11 +1,11 @@
 function fairsaving_hide_fairaddress(input){
   jQuery(document).ready(function($) {
     address34 = '0000000000000000000000000000000000';
-    if( $('input#edd-fairsaving').is(':checked') ) {
-      $('input#edd-fairsaving').val(1);
+    if( $('input#edd-fairsaving').is(':checked') ) {//val() == '0' ) { //alert($('input#edd-fairsaving').val());//is(':checked') ) {
+      $('input#edd-fairsaving').val(1).attr('checked','checked');
       $('#edd-fairaddress-wrap').hide().find('input').val( address34 );
     } else {
-      $('input#edd-fairsaving').val(0);
+      $('input#edd-fairsaving').val(0).removeAttr('checked');
       $('#edd-fairaddress-wrap').show();
       if( $('#edd-fairaddress-wrap').find('input').val() == address34 ){
         $('#edd-fairaddress-wrap').find('input').val('');
@@ -14,14 +14,29 @@ function fairsaving_hide_fairaddress(input){
   });
 }
 jQuery(document).ready(function($) {
+  if( $('input#edd-fairsaving').val() == '1'){
+    $('input#edd-fairsaving').attr('checked','checked');
+  } else {
+    $('input#edd-fairsaving').val(0).removeAttr('checked');
+  }
   fairsaving_hide_fairaddress($('input#edd-fairsaving'));
 
-  //// Section title currency select change
+  //// Section title currency select change autosave
   $('select.edd-currencies-select').change(function(){
     $('input.edd-currency-save-button').click();
     $('.section-title .edd-icon-spin').css('display', 'inline-block');
   });
 
+  //// If not required indicator, put them (chromium)
+  if($(' #edd-email-wrap span.edd-required-indicator').length < 1){
+    $('#edd-email-wrap label').append('<span class="edd-required-indicator">*</span>');
+  }
+  if($(' #edd-fairaddress-wrap span.edd-required-indicator').length < 1){
+    $('#edd-fairaddress-wrap label').append('<span class="edd-required-indicator">*</span>');
+  }
+  if($(' #edd-first-name-wrap span.edd-required-indicator').length < 1){
+    $('#edd-first-name-wrap label').append('<span class="edd-required-indicator">*</span>');
+  }
 
   //// Auto price conversion display in product page
   price_str = $('.page-header .download-info span.edd_price').text();
@@ -29,14 +44,18 @@ jQuery(document).ready(function($) {
     arr = price_str.split(' ');
     fair_eur = arr[2].split(',').join('.') * 1;
     //rest_str = price_str.split(' ').slice(1).join(' ');
-    currarr = arr[5].split('');
-    cuarr = currarr.slice(0);
-    for(a=currarr.length; a>0; a--){
-      if( !isNaN(currarr[a]) ){
-        curr_rate = currarr.splice(0, a+1).join('')*1;
-        curr_str = cuarr.splice(a+1, cuarr.length).join('');
-        break;
+    if(arr[5]){
+      currarr = arr[5].split('');
+      cuarr = currarr.slice(0);
+      for(a=currarr.length; a>0; a--){
+        if( !isNaN(currarr[a]) ){
+          curr_rate = currarr.splice(0, a+1).join('')*1;
+          curr_str = cuarr.splice(a+1, cuarr.length).join('');
+          break;
+        }
       }
+    } else {
+      curr_rate = false;
     }
   }
   $('input.edd_cp_price').keyup(function() {
