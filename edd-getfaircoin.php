@@ -195,10 +195,11 @@ add_filter( 'edd_download_price', 'getfaircoin_price', 10);
 function getfaircoin_currency_filter($price){
   //print count( split(' ', $price) );
   if( count( split(' ', $price) ) > 1){//return number_format(1, 0, '.', ',');
-     return str_replace('&euro;', '', $price);
-  } else {
-     return $price;
+    $price = str_replace('&euro;', '', $price);
+    //$price = str_replace('eur', '', $price);
+    //print($price);
   }
+  return $price;
 }
 add_filter( 'edd_eur_currency_filter_after', 'getfaircoin_currency_filter' );
 

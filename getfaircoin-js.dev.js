@@ -38,13 +38,29 @@ jQuery(document).ready(function($) {
     $('#edd-first-name-wrap label').append('<span class="edd-required-indicator">*</span>');
   }
 
+  var mini_price = $('.edd-cp-container small').first().text();
+  if(mini_price.indexOf(') )') > -1){
+    mini_price = mini_price.split(' ( ').join(' ≈ ').split(') )').join(')');
+    $('.edd-cp-container small').first().text( mini_price );
+  }
   //// Auto price conversion display in product page
-  price_str = $('.page-header .download-info span.edd_price').text();
+  var price_str = $('.page-header .download-info span.edd_price').text();
   if(price_str){
-    arr = price_str.split(' ');
-    fair_eur = arr[2].split(',').join('.') * 1;
+    var arr = price_str.split(' ');
+    if(arr.length > 8){ // currency codes
+      price_str = price_str.split('EUR ').join('');
+      $('.page-header .download-info span.edd_price').text( price_str );
+      arr = price_str.split(' ');
+      //alert(price_str);
+    }
+    var fair_eur = arr[2].split(',').join('.') * 1;
     //rest_str = price_str.split(' ').slice(1).join(' ');
-    if(arr[5]){
+
+    if(!isNaN(arr[5]*1)){ // currency codes option
+      curr_rate = arr[5] * 1;
+      curr_str = ' '+arr[6];
+
+    } else if(arr[5]){ // curreny symbol option
       currarr = arr[5].split('');
       cuarr = currarr.slice(0);
       for(a=currarr.length; a>0; a--){
