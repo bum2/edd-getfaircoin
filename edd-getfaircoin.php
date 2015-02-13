@@ -26,6 +26,7 @@ function getfaircoin_scripts() {
 		wp_enqueue_style('edd-getfaircoin', get_stylesheet_directory_uri().'/getfaircoin-css.css', false, EDD_GETFAIRCOIN_VERSION, 'all');
 	} else {
 		wp_enqueue_style('edd-getfaircoin', plugins_url('edd-getfaircoin/getfaircoin-css.css'), false, EDD_GETFAIRCOIN_VERSION, 'all');
+    wp_enqueue_style('select2', plugins_url('edd-getfaircoin/assets/css/select2.min.css'), false, EDD_GETFAIRCOIN_VERSION, 'all');
 	}
 	if( is_rtl() ) {
 		if(@file_exists(get_stylesheet_directory().'/polls-css-rtl.css')) {
@@ -44,6 +45,8 @@ function getfaircoin_scripts() {
 		//'show_loading' => intval($poll_ajax_style['loading']),
 		//'show_fading' => intval($poll_ajax_style['fading'])
 	//));
+
+  wp_enqueue_script('select2', plugins_url('edd-getfaircoin/assets/js/select2.min.js'), array('jquery'), EDD_GETFAIRCOIN_VERSION, true);)
 }
 
 
