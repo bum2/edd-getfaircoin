@@ -83,6 +83,30 @@ h1.page-title {
 }
 .section-title select.edd-currencies-select {
   border: 1px solid #bdc3c7;
+  font-size: 85%;
+  /*border-radius: 5px 5px 5px 5px;*/
+  padding: 7px;
+  margin: 0px -5px 0px 10px;
+  background-color: #eee;
+}
+.section-title a {
+  outline: 0;
+}
+
+.section-title span.select2-container,
+.section-title span.select2,
+.section-title span.selection,
+.section-title span.dropdown-wrapper,
+.section-title span.select2-selection,
+.section-title span.select2-selection__rendered,
+.section-title span.select2-selection__arrow {
+  padding: inherit;
+  margin: inherit;
+  border: inherit;
+  /*position: inherit;
+  display: inherit;
+  line-height: inherit;*/
+
 }
 
 .section-title .edd-icon-spin {
@@ -171,6 +195,9 @@ h1.page-title {
   display: none;
 }
 .content-grid-download .overlay strong.item-price {
+  display: none;
+}
+.content-grid-download .overlay form {
   display: none;
 }
 .content-grid-download .overlay .edd_purchase_submit_wrapper {

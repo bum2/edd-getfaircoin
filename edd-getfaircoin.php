@@ -23,10 +23,15 @@ function getfaircoin_textdomain() {
 add_action('wp_enqueue_scripts', 'getfaircoin_scripts');
 function getfaircoin_scripts() {
 	if(@file_exists(get_stylesheet_directory().'/getfaircoin-css.css')) {
+
+    //wp_enqueue_style('select2', get_stylesheet_directory_uri().'/assets/css/select2.min.css', false, EDD_GETFAIRCOIN_VERSION, 'all');
+
 		wp_enqueue_style('edd-getfaircoin', get_stylesheet_directory_uri().'/getfaircoin-css.css', false, EDD_GETFAIRCOIN_VERSION, 'all');
 	} else {
-		wp_enqueue_style('edd-getfaircoin', plugins_url('edd-getfaircoin/getfaircoin-css.css'), false, EDD_GETFAIRCOIN_VERSION, 'all');
-    wp_enqueue_style('select2', plugins_url('edd-getfaircoin/assets/css/select2.min.css'), false, EDD_GETFAIRCOIN_VERSION, 'all');
+
+    //wp_enqueue_style('select2', plugins_url('edd-getfaircoin/assets/css/select2.min.css'), false, EDD_GETFAIRCOIN_VERSION, 'all');
+
+    wp_enqueue_style('edd-getfaircoin', plugins_url('edd-getfaircoin/getfaircoin-css.css'), false, EDD_GETFAIRCOIN_VERSION, 'all');
 	}
 	if( is_rtl() ) {
 		if(@file_exists(get_stylesheet_directory().'/polls-css-rtl.css')) {
@@ -36,8 +41,13 @@ function getfaircoin_scripts() {
 		}
 	}
 
+
   wp_enqueue_script('edd-getfaircoin', plugins_url('edd-getfaircoin/getfaircoin-js.dev.js'), array('jquery'), EDD_GETFAIRCOIN_VERSION, true); // bumbum .dev.
-	//wp_localize_script('edd-getfaircoin', 'getfaircoinL10n', array(
+
+  //wp_register_script('select2', plugins_url('edd-getfaircoin/assets/js/select2.min.js'), false, EDD_GETFAIRCOIN_VERSION, true); // bumbum
+  //wp_enqueue_script('select2'); // bumbum
+
+  //wp_localize_script('edd-getfaircoin', 'getfaircoinL10n', array(
 	//	'ajax_url' => admin_url('admin-ajax.php'),
 	//	'text_wait' => __('Your last request is still being processed. Please wait a while ...', 'edd-getfaircoin'),
 		//'text_valid' => __('Please choose a valid poll answer.', 'fair-polls'),
@@ -46,7 +56,6 @@ function getfaircoin_scripts() {
 		//'show_fading' => intval($poll_ajax_style['fading'])
 	//));
 
-  wp_enqueue_script('select2', plugins_url('edd-getfaircoin/assets/js/select2.min.js'), array('jquery'), EDD_GETFAIRCOIN_VERSION, true);)
 }
 
 
