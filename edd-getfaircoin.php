@@ -444,21 +444,25 @@ function getfaircoin_edd_unset_other_gateways( $gateway_list ) {
 
   if ( $download_ids ) {
     foreach ( $download_ids as $id ) {
-      if ( has_term( 'Paypal', 'download_category', $id ) ) {
-	      //var_dump($gateway_list);
-	      $gateway_manual = $gateway_list['transfer'];
+      $gatoWay = get_post_meta( $id, '_edd_gateway', true);
+      //echo ':'.$gatoWay.':';//print $gatoWay;
+      if ( $gatoWay == 'paypal' ) { //strpos( $gatoWay, 'paypal' ) != false) { //has_term( 'Paypal', 'download_category', $id ) ) {
+              //var_dump($gateway_list);
+              //$gateway_manual = $gateway_list['transfer'];
         unset( $gateway_list['transfer'] );
-	      unset( $gateway_list['localnode'] );
-      }
-      if ( has_term( 'Transfer', 'download_category', $id ) ) {
-	      $gateway_paypal = $gateway_list['paypal'];
+        unset( $gateway_list['localnode'] );
+      } else if ( $gatoWay == 'transfer' ) { //strpos( $gatoWay, 'transfer' ) != false ) { //has_term( 'Transfer', 'download_category', $id ) ) {
+              //$gateway_paypal = $gateway_list['paypal'];
         unset( $gateway_list['paypal'] );
-	      unset( $gateway_list['localnode'] );
-      }
-      if ( has_term( 'LocalNode', 'download_category', $id ) ) {
-	      $gateway_localnode = $gateway_list['localnode'];
+        unset( $gateway_list['localnode'] );
+      } else if ( $gatoWay == 'localnode' ) { //strpos( $gatoWay, 'localnode' ) != false ) { //has_term( 'LocalNode', 'download_category', $id ) ) {
+              //$gateway_localnode = $gateway_list['localnode'];
+        //echo ':'.$gatoWay.':';
         unset( $gateway_list['paypal'] );
-	      unset( $gateway_list['transfer'] );
+        unset( $gateway_list['transfer'] );
+        //print_r( $gateway_list );
+      } else {
+        echo 'Error! $gateway: '.$gatoWay;
       }
     }
   }

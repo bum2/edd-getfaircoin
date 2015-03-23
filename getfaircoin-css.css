@@ -1,3 +1,5 @@
+/*  HEADER  */
+
 .site-branding {
   /*bottom: -30px;*/
 }
@@ -20,27 +22,11 @@ h1.site-title a:focus {
 .site-branding .site-description {
   position: relative !important;
   line-height: 10px;
+  font-size: 16px;
 }
 
 h1.page-title {
   margin-top: 20px;
-}
-
-
-.entry-content p {
-  margin-bottom: 0.7em;
-}
-.entry-content ol {
-  margin: 0 0 1.5em 1.2em;
-}
-.entry-content a:link, .entry-content a:active, .entry-content a:visited {
-  color: rgb(58, 188, 150);/* #4ed0aa; */
-}
-.site-main .entry-content h4 {
-  margin: 2.5em 0 1em;
-}
-.site-main .entry-content h3 {
-  margin: 2.5em 0 1em;
 }
 
 .home .page-header {
@@ -61,13 +47,37 @@ h1.page-title {
 }
 
 
+/*  CONTENT  */
+.entry-content {
+  font-size: 1.05em;
+}
+.entry-content p {
+  margin-bottom: 0.7em;
+}
+.entry-content ol {
+  margin: 0 0 1.5em 1.2em;
+}
+.entry-content a:link, .entry-content a:active, .entry-content a:visited {
+  color: rgb(58, 188, 150);/* #4ed0aa; */
+}
+.site-main .entry-content h4 {
+  margin: 2.5em 0 1em;
+}
+.site-main .entry-content h3 {
+  margin: 2.5em 0 1em;
+}
+
+
 .edd-cp-container {
   font-size: 1.2em;
 }
+
 .main-navigation {
   z-index: 99;
 }
-
+.main-navigation ul.sub-menu ul.edd-cart {
+  width: 250px;
+}
 
 /*  Custom SECTION TITLE  */
 
@@ -160,7 +170,9 @@ h1.page-title {
     filter: FlipH;
     -ms-filter: "FlipH";
 }
-
+.site-footer .col-md-4 img {
+  margin-top: 8px;
+}
 
 /***** HIDE SEARCH ******/
 .header-search-icon {
@@ -188,7 +200,8 @@ h1.page-title {
   font-size: 18px;
 }
 .site-main .content-grid-download.truncate-title .entry-title {
-  height: 24px;
+  /*height: 24px;*/
+  text-align: center;
 }
 
 .content-grid-download .byline {

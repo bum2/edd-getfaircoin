@@ -52,6 +52,10 @@ jQuery(document).ready(function($) {
       $('.page-header .download-info span.edd_price').text( price_str );
       arr = price_str.split(' ');
       //alert(price_str);
+    } else if(arr.length == 5){
+      price_str = price_str.split(' EUR').join('');
+      $('.page-header .download-info span.edd_price').text( price_str );
+      arr = price_str.split(' ');
     }
     var fair_eur = arr[2].split(',').join('.') * 1;
     //rest_str = price_str.split(' ').slice(1).join(' ');
@@ -106,9 +110,14 @@ jQuery(document).ready(function($) {
   //// if at home, hide menu 'home'
   //alert(window.location);
   loc = window.location+'';
-  if(loc.split('/').length < 5){
-    $('.home-but').hide();
-    //alert(loc.split('/').length);
+  if(loc.indexOf('/es/') != -1 || loc.indexOf('/pt-pt/') != -1){
+    if(loc.split('/').length < 6){
+      $('.home-but').hide();
+    }
+  } else {
+    if(loc.split('/').length < 5){
+      $('.home-but').hide();
+      //alert(loc.split('/').length);
+    }
   }
-
 });
