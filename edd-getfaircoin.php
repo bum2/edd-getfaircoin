@@ -2,14 +2,14 @@
 /**
 * Plugin Name: EDD GetFaircoin.net Fields and Rates
 * Plugin URI: https://getfaircoin.net/
-* Description: This plugin adds user FAIR address and FairService checkbox fields in the checkout, shows actual faircoin price at homepage and aprox faircoin as user enters his fiat amount, and now also shows a reference in many other fiat currencies other than euro. Requires edd-currency-converter and edd-custom-prices.
+* Description: This plugin adds user FAIR address and FairService checkbox fields in the checkout, shows actual faircoin price at homepage and aprox faircoin as user enters his fiat amount, and now also shows a reference in many other fiat currencies other than euro. Requires edd-currency-converter and edd-custom-prices. Added (0.4) an api to retrieve api/fair-eur or api/eur-fair rates.
 * Author: Bumbum
-* Version: 0.3
+* Version: 0.4
 * Author URI: https://github.com/bum2/
 */
 
 ### Version
-define( 'EDD_GETFAIRCOIN_VERSION', 0.3 );
+define( 'EDD_GETFAIRCOIN_VERSION', 0.4 );
 
 
 ### Create Text Domain For Translations
