@@ -32,7 +32,7 @@ In the getfaircoin.net site, the EDD downloads-products (posts) are called 'GetM
 - or call https://getfaircoin.net/api/eur-fair and get {"eur-fair":0.00666667}
 
 
-### Contribute donating:
+### Contribute donating to bum2:
 
 faircoin:fThesXCU7FfekYNNui2MtELfCNoa9pctJk
 
