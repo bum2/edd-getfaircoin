@@ -234,3 +234,9 @@ h2.comments-title span {
 .edd_purchase_receipt_files {
   display: none;
 }
+
+/****  CHECKOUT   *****/
+p.fair-notice {
+  margin-top: 8px;
+}
+
