@@ -1,3 +1,41 @@
+if( typeof curr_rate == 'undefined') var curr_rate = false;
+if( typeof fair_eur == 'undefined') var fair_eur = false;
+
+var QueryString = function () {
+  // This function is anonymous, is executed immediately and
+  // the return value is assigned to QueryString!
+  var query_string = {};
+  var query = window.location.search.substring(1);
+  var vars = query.split("&");
+  for (var i=0;i<vars.length;i++) {
+    var pair = vars[i].split("=");
+        // If first entry with this name
+    if (typeof query_string[pair[0]] === "undefined") {
+      query_string[pair[0]] = decodeURIComponent(pair[1]);
+        // If second entry with this name
+    } else if (typeof query_string[pair[0]] === "string") {
+      var arr = [ query_string[pair[0]],decodeURIComponent(pair[1]) ];
+      query_string[pair[0]] = arr;
+        // If third or later entry with this name
+    } else {
+      query_string[pair[0]].push(decodeURIComponent(pair[1]));
+    }
+  }
+    return query_string;
+}();
+
+if(typeof(CFdata) != "undefined" && CFdata !== null) {
+  alert('init:'+CFdata);
+} else {
+  var CFdata = {};
+}
+
+if(typeof(FMdata) != "undefined" && FMdata !== null) {
+  alert('init:'+FMdata);
+} else {
+  var FMdata = {};
+}
+
 function fairsaving_hide_fairaddress(input){
   jQuery(document).ready(function($) {
     address34 = '0000000000000000000000000000000000';
@@ -13,6 +51,27 @@ function fairsaving_hide_fairaddress(input){
     };
   });
 }
+
+function coopfunding_fill_fields(){
+  jQuery(document).ready(function($) {
+    if(typeof cF_email != 'undefined' && typeof cF_first != 'undefined'){
+        $('input#edd-email').val(cF_email);
+        $('input#edd-first').val(cF_first);
+        $('input#edd-last').val(cF_last);
+    };
+  });
+}
+
+function fairmarket_fill_fields(){
+  jQuery(document).ready(function($) {
+    if(typeof fM_email != 'undefined' && typeof fM_first != 'undefined'){
+        $('input#edd-email').val(fM_email);
+        $('input#edd-first').val(fM_first);
+        $('input#edd-last').val(fM_last);
+    };
+  });
+}
+
 jQuery(document).ready(function($) {
   if( $('input#edd-fairsaving').val() == '1'){
     $('input#edd-fairsaving').attr('checked','checked');
@@ -20,13 +79,50 @@ jQuery(document).ready(function($) {
     $('input#edd-fairsaving').val(0).removeAttr('checked');
   }
   fairsaving_hide_fairaddress($('input#edd-fairsaving'));
-  
+
+  var query = window.location.search.substring(1);
+
+  coopfunding_fill_fields();
+  fairmarket_fill_fields();
+
   //// Coopshares hide FairAddress and FairSaving
-  if( $('label.coopshares-mixed').length > 0 ) {
+  if( $('label.coopshares-mixed').length > 0 || $('label.fairmarket-mixed').length > 0 ) {
     $('input#edd-fairsaving').attr('checked','checked').val('1');
-    //fairsaving_hide_fairaddress($('input#edd-fairsaving'));
     $('#edd-fairsaving-wrap').hide();
   }
+  // bind a gateway_changed event, needs to add .trigger('gateway_changed') in edd's assets/js/edd-ajax.js last lines, after inserting html content to the div // no needed, now is 'edd_gateway_loaded'
+  $('body').bind('edd_gateway_loaded', function(pay_mode){
+    if( $('label.coopshares-mixed').length > 0 ) {
+      $('input#edd-fairsaving').attr('checked','checked').val('1');
+      fairsaving_hide_fairaddress();
+      $('#edd-fairsaving-wrap').hide();
+    };
+
+    if( $('label.fc2invest-mixed').length > 0 ) {
+      //$('input#edd-fairsaving').attr('checked','checked').val('1');
+      fairsaving_hide_fairaddress();
+      //$('#edd-fairsaving-wrap').hide();
+    };
+
+    if( $('label.fairmarket-mixed').length > 0 ) {
+      $('input#edd-fairsaving').attr('checked','checked').val('1');
+      fairsaving_hide_fairaddress();
+      $('#edd-fairsaving-wrap').hide();
+    };
+
+    coopfunding_fill_fields();
+    fairmarket_fill_fields();
+
+    if (typeof render_localnode_checkout === "function") render_localnode_checkout();
+    $( "#localnode-menu" ).menu();
+
+    /*if(typeof cF_email != 'undefined' && typeof cF_first != 'undefined'){
+	$('input#edd-email').val(cF_email);
+	$('input#edd-first').val(cF_first);
+	$('input#edd-last').val(cF_last);
+    };*/
+
+  });
 
   //// Section title currency select change autosave
   $('select.edd-currencies-select').change(function(){
@@ -54,17 +150,36 @@ jQuery(document).ready(function($) {
   var price_str = $('.page-header .download-info span.edd_price').text();
   if(price_str){
     var arr = price_str.split(' ');
+    if(arr.length <= 3){
+      //alert('price_str?: '+price_str);
+    } else {
+      fair_eur = arr[2].split(',').join('.') * 1;
+    }
+
     if(arr.length > 8){ // currency codes
+      arr[6] = parseFloat( (arr[6]*1) / (('1'+fair_eur)*1) ).toFixed(2); // when zero custom price is not interpreted as 1 (edd v2.3.9), the converted uses '1'+faircoin_price, so divide with that
+      price_str = arr.join(' ');
       price_str = price_str.split('EUR ').join('');
+      //price_str = price_str.split('FAIRP').join('FAIR P');
       $('.page-header .download-info span.edd_price').text( price_str );
       arr = price_str.split(' ');
-      //alert(price_str);
     } else if(arr.length == 5){
       price_str = price_str.split(' EUR').join('');
-      $('.page-header .download-info span.edd_price').text( price_str );
-      arr = price_str.split(' ');
+      price_str = price_str.split('fairP').join('fair <br>P');
+      $('.page-header .download-info span.edd_price').html( price_str );
+      arr = price_str.split(' '); //alert(arr);
+    } else if(arr.length > 5 && arr.length < 9){ // coming soon
+        price_str = arr.join(' ');
+        price_str = price_str.split(' EUR').join('<br>');
+        if(arr[4] == 'EUR'){
+            arr[4] == ' <br> ';
+        }; //alert(price_str);
+	$('.page-header .download-info span.edd_price').html( price_str );
+    } else if(arr.length < 5){ // coming soon
+       //alert(arr.join(' '));
     }
-    var fair_eur = arr[2].split(',').join('.') * 1;
+
+    //var fair_eur = arr[2].split(',').join('.') * 1;
     //rest_str = price_str.split(' ').slice(1).join(' ');
 
     if(!isNaN(arr[5]*1)){ // currency codes option
@@ -81,8 +196,6 @@ jQuery(document).ready(function($) {
           break;
         }
       }
-    } else {
-      curr_rate = false;
     }
   }
   $('input.edd_cp_price').keyup(function() {
@@ -127,25 +240,32 @@ jQuery(document).ready(function($) {
       //alert(loc.split('/').length);
     }
   }
-  
+
   //// FIF change price
-  var idFIF = '1012';
-  var idFEHIF = '1005';
-  var idFEHIFt = '1053';
-  if( $( 'form#edd_purchase_' + idFEHIF ).length +
-      $( 'form#edd_purchase_' + idFEHIFt ).length +
-      $( 'form#edd_purchase_' + idFIF ).length > 0) { // Coopshares Posts
+  //var idFIF = '1012';
+  //var idFEHIF = '1005';
+  //var idFEHIFt = '1053';
+  var cs_cont = 0;
+  var fif_cont = 0;
+ if(typeof CS_ids != 'undefined'){
+  for( var i=0; i < CS_ids.length; i++ ) {
+    cs_cont += $('form#edd_purchase_'+CS_ids[i]).length;
+  }
+  for( var i=0; i < FIF_ids.length; i++ ) {
+    fif_cont += $('form#edd_purchase_'+FIF_ids[i]).length;
+  }
+  if( cs_cont > 0) { // Coopshares Posts
     $('span.edd-add-to-cart-label').text('Invest in Coopshares Now');
     edd_cp['add_to_cart_text'] = 'Get Coopshares Now';
-    if( $('form#edd_purchase_' + idFIF ).length > 0 ){//input.edd_cp_price').length == 0) { // Coopshares FIF
+    if( fif_cont > 0 ){ // Coopshares FIF
         $('input.edd_cp_price').val( $('span.edd_price').text().split(' ')[2] ).parent().hide();
         //$('span.edd_price').text('1 FAIR = 1 fair');
     }
   }
   //// FIF auto set price
   $('input#edd-faircoins').keyup(function() {
-    var fairs = parseFloat($(this).val()).toFixed(2)+'';//(parseFloat($(this).val() * fair_eur).toFixed(2)+'');//.split('.').join(',');
-    //alert(fairs);
+    var fairs = parseFloat($(this).val()).toFixed(2)+'';
+    if(fairs == 'NaN') fairs = '0';
     //if ( curr_rate ){
       //curr_aprox = parseFloat($(this).val() * curr_rate).toFixed(2)+'';
       $('span.edd_cart_amount').attr('data-subtotal',fairs).attr('data-total', fairs).html( fairs + '&nbsp; FAIR' );// + faircoins + ' Fair ( ' + curr_aprox + curr_str + ' )' );
@@ -153,20 +273,77 @@ jQuery(document).ready(function($) {
       //$('.download-info span.edd_price').html( 'aprox: &nbsp;' + fairs + ' Fair' );
     //}
   });
-  if( $('tr[data-download-id='+idFIF+']').length > 0) { // Coopshares FIF in the Checkout
-    var item_price_arr = $('tr[data-download-id='+idFIF+'] td.edd_cart_item_price').text().split(' ');
+
+  var fif_chk_cont = 0;
+  for( var i=0; i < FIF_ids.length; i++){
+    var fiftr = $('tr[data-download-id='+ FIF_ids[i] +']');
+    if( fiftr.length ){
+      fif_chk_cont += fiftr.length;
+      break;
+    }
+  }
+  if( fif_chk_cont > 0) { // Coopshares FIF in the Checkout
+    var item_price_arr = fiftr.find('td.edd_cart_item_price').text().split(' ');
     item_price_arr[1] = 'Fair/Eur';
-    $('tr[data-download-id='+idFIF+'] td.edd_cart_item_price').text( item_price_arr.join(' ') );
+    if( item_price_arr.length > 3){
+       item_price_arr[3] = curr_rate ? curr_rate : parseFloat( item_price_arr[0] * (item_price_arr[0]/item_price_arr[3]) ).toFixed(2);
+       item_price_arr[4] = 'Fair/'+item_price_arr[4];
+
+       //alert(item_price_arr.join(' '));
+    }
+    fiftr.find('td.edd_cart_item_price').text( item_price_arr.join(' ') );//[0]+' '+item_price_arr[1] ); //.join(' ') );
     if( $('span.edd_cart_amount').text().indexOf('FAIR') == -1) $('span.edd_cart_amount').attr('data-subtotal', 0).attr('data-total', 0).html( '0 FAIR' );
+    $('fieldset#edd_currency_checkout_message').hide();
+  }
+ }
+  if( $('table#edd_purchase_receipt').length > 0 && $('h3').first().text().indexOf('FIF') != -1 ) { // Coopshares FIF in the Receipt
+    var total_arr = $('table#edd_purchase_receipt tr').eq(5).find('td').last().text().split(' ');
+    if(total_arr[1] != 'FAIR') total_arr[1] = 'FAIR';
+    var total_str = total_arr.join(' ');//$('table#edd_purchase_receipt tr').eq(5).find('td').last().text();
+    var price_arr = $('table#edd_purchase_receipt_products tr').last().find('td').last().text().split(' ');
+    if(price_arr.length > 3){
+      alert(price_arr);
+    }
+    //$('table#edd_purchase_receipt tr').eq(3).find('td').last().text( total_str );
+    $('table#edd_purchase_receipt tr').eq(4).find('td').last().text( total_str );
+    var item_arr = $('table#edd_purchase_receipt_products tr').eq(1).find('td').last().text().split(' ');
+    //$('table#edd_purchase_receipt_products tr').eq(1).find('td').last().text( item_arr[0]+' Fair/Eur' );
+    $('table#edd_purchase_receipt_products tr').last().find('td').last().text( total_str );
   }
 
-  if( $('table#edd_purchase_receipt').length > 0 && $('h3').first().text().indexOf('FIF') != -1 ) { // Coopshares FIF in the Receipt
-    var total_arr = $('table#edd_purchase_receipt tr').eq(3).find('td').last().text().split(' ');
-    total_arr[1] = 'FAIR';
-    $('table#edd_purchase_receipt tr').eq(3).find('td').last().text( total_arr.join(' ') );
-    $('table#edd_purchase_receipt tr').eq(4).find('td').last().text( total_arr.join(' ') );
-    var item_arr = $('table#edd_purchase_receipt_products tr').eq(1).find('td').last().text().split(' ');
-    $('table#edd_purchase_receipt_products tr').eq(1).find('td').last().text( item_arr[0]+' Fair/Eur' );
-    $('table#edd_purchase_receipt_products tr').last().find('td').last().text( total_arr.join(' ') );
+
+  // coopfunding FC2 campaign
+  var query = window.location.search.substring(1);
+
+  if(CFdata.length || FMdata.length){
+
+     alert('CFdata+FMdata: '+CFdata+FMdata);
+
+  } else if(query && typeof cliket == 'undefined'){
+
+        //alert('QUERY: '+query+' PRICE:'+QueryString.amount);
+
+        $('input.edd_cp_price').focus().val(QueryString.amount).keyup();//.blur();//.prop('disabled', true);//change();
+
+        //$('input.edd_cp_price').trigger($.Event( 'keydown', {which:37, keyCode:37}));
+
+        /*CFdata.email = QueryString.email;
+        CFdata.first = QueryString.first_name;
+        CFdata.last = QueryString.last_name;
+        CFdata.order = QueryString.order;
+        CFdata.amount = QueryString.amount;*/
+
+        if($('a.edd-add-to-cart').css('display')!='none' && $('a.edd-add-to-cart span.edd-loading').css('opacity') == 0 &&
+$('li.current-cart span.edd-cart-quantity').text()*1 == 0 && (typeof CForder_id != 'undefined' || typeof FMorder_id != 'undefined')){
+
+                setTimeout(function(){
+			$('a.edd-add-to-cart').click();//.prop('disabled', true);
+		}, 1000);
+
+                //cliket = true;
+        }
+
   }
+
+
 });

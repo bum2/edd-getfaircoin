@@ -2,14 +2,35 @@
 /**
 * Plugin Name: EDD GetFaircoin.net Faircoin Price and Fields
 * Plugin URI: https://github.com/bum2/edd-getfaircoin
-* Description: This plugin adds user FAIR address and FairService checkbox fields in the checkout, shows actual faircoin price at homepage and aprox faircoin as user enters his fiat amount, and now also shows a reference in many other fiat currencies other than euro. Requires edd-currency-converter and edd-custom-prices. Now works with any gateway, excluding all them (at the checkout) except the one setted in the post's sidebar Gateway Options settings.
+* Description: This plugin adds user FAIR address and FairService checkbox fields in the checkout, shows actual faircoin price at homepage and aprox faircoin as user enters his fiat amount, and now also shows a reference in many other fiat currencies other than euro. Requires edd-currency-converter and edd-custom-prices. Now works with any gateway, excluding all them (at the checkout) except the one setted in the post's sidebar Gateway Options settings. Added the order field for the frontpage's getmethods and a gateway filter on payment history. Now compatible with coopfunding's Faircoin2 Crowdinvestment Campaign.
 * Author: Bumbum
-* Version: 0.5
+* Version: 0.7
 * Author URI: https://getfaircoin.net
 */
 
+//// IMPORTANT NOTE:  ////
+/* 
+
+Has been edited the EDD /includes/payments/functions.php at line 1045, to get the correct customer_id by the email, when there's no payment meta for customer_id, adding this lines:
+
+    if($customer_id < 1){ // bumbum when there's no meta _edd_payment_customer_id, get from user email
+        $customer_email = edd_get_payment_meta( $payment_id, '_edd_payment_user_email', true );
+        $customer_db = new EDD_DB_Customers();
+        $customer = $customer_db->get_customer_by( 'email', $customer_email );
+        if( $customer ) {
+            $custom_id = $customer->id;
+            if( $custom_id != $customer_id ) {
+                edd_update_payment_meta( $payment_id, '_edd_payment_customer_id', $custom_id );
+                $customer_id = $custom_id;
+            }
+        }
+    } //
+
+*/
+
+
 ### Version
-define( 'EDD_GETFAIRCOIN_VERSION', 0.5 );
+define( 'EDD_GETFAIRCOIN_VERSION', 0.7 );
 
 
 ### Create Text Domain For Translations
@@ -43,21 +64,38 @@ function getfaircoin_scripts() {
   //wp_localize_script( 'edd-getfaircoin', 'edd_cp', array( 'add_to_cart_text' => $add_to_cart_text ) );
 }
 
+////
+// only send purchase receipt when is paypal, the others are sending their own emails
+function getfaircoin_trigger_purchase_receipt( $payment_id ) {
+    remove_action( 'edd_complete_purchase', 'edd_trigger_purchase_receipt', 999, 1 );
+	// Make sure we don't send a purchase receipt while editing a payment
+	if ( isset( $_POST['edd-action'] ) && 'edit_payment' == $_POST['edd-action'] )
+		return;
+    
+    $gateway = edd_get_payment_gateway( $payment_id );
+    if( $gateway == 'paypal'){
+        // Send email with secure download link
+        edd_email_purchase_receipt( $payment_id );
+    } else {
+        return;
+    }
+}
+remove_action( 'edd_complete_purchase', 'edd_trigger_purchase_receipt', 999, 1 );
+add_action( 'edd_complete_purchase', 'getfaircoin_trigger_purchase_receipt', 1000, 1 );
+
+
+// To get the new customer id, when there's no meta key, then use the email
+// edited in the EDD includes/payments/functions.php line 1045 !!
 
 ////
 
 function getfaircoin_price($price){
   global $edd_options;
-  //if( isset($edd_options['coopshares_fair_checkout_info']) && $price == 0 ) {
-  //  $price = 1;//$edd_options['faircoin_price'];
-  //  return '1 FAIR = 1 FAIR';//number_format($price, 2, '.', ',');
-  //} else 
+    
   if( $price == 0 ) {
-    $price = 1;
-    return '1€ = '.number_format($edd_options['faircoin_price'], 0, '.', ',').' fair';
-  } else {
-    return $price;
+    $price = '1€ = '.number_format($edd_options['faircoin_price'], 0, '.', ',').' fair';
   }
+  return $price;
 }
 add_filter( 'edd_download_price', 'getfaircoin_price', 10);
 
@@ -65,13 +103,34 @@ function getfaircoin_currency_filter($price){
   global $edd_options;
   //if( isset($edd_options['coopshares_fair_checkout_info']) ) {
   //  $price = $edd_options['faircoin_price'].' FAIR';
-  //} else 
-  if( count( explode(' ', $price) ) > 1) {
-    $price = str_replace('&euro;', '', $price);
+  //} else
+  echo 'Price: '.$price;
+  if( $price == 1){//strpos($price, '1 €') !== false ){
+    echo 'Price: '.$price;
+    $price = $edd_options['faircoin_price'];//.' 1€ = '.number_format($edd_options['faircoin_price'], 0, '.', ',').' fair'; 
+  }
+  $price_arr = explode(' ', $price);
+  if( count( $price_arr ) > 1 ) {
+      $price = str_replace('&euro;', '', $price);
+      $price = str_replace('€', '', $price);
+  //    if( count( $price_arr ) > 3 ) {
+  //        echo 'afterPRICE: '.$price;
+  //        $price = 1;
+  //    }
   }
   return $price;
 }
-add_filter( 'edd_eur_currency_filter_after', 'getfaircoin_currency_filter' );
+//add_filter( 'edd_eur_currency_filter_before', 'getfaircoin_currency_filter' ); //edd_eur_currency_filter_after
+
+function getfaircoin_currency_filter_before($formated, $currency, $price){
+    //$price_arr = explode(' ', $price);
+    //if( count( $price_arr ) > 1 ) {
+        echo 'FORMATED: '.$formated.' PRICE: '.$price;
+    //}
+    //return $price;
+}
+//add_filter( 'edd_currency_change_before_format', 'getfaircoin_currency_filter_before' );
+
 
 //// Menu items, not used now
 function getfair_currency_menu_item( $item ) {
@@ -84,18 +143,17 @@ function getfair_currency_menu_item( $item ) {
 
 ////
 
-
 function item_quantities_none() {
-  if( isset($edd_options['coopshares_fair_checkout_info']) ) {
-     return true;
-  } else {
+  //if( isset($edd_options['coopshares_fair_checkout_info']) ) {
+  //   return true;
+  //} else {
      return false;
-  }
+  //}
 }
 add_filter( 'edd_item_quantities_enabled', 'item_quantities_none' );
 
 
-//   N E W   E D D   S E T T I N G S   F I E L D S   //
+////   G E N E R A L   S E T T I N G S   F I E L D S   //
 
 function add_getfaircoin_settings($settings) {
   $getfaircoin_settings = array(
@@ -124,6 +182,10 @@ function add_getfaircoin_settings($settings) {
 }
 add_filter( 'edd_settings_general', 'add_getfaircoin_settings' );
 
+
+
+////    P O S T   G A T E W A Y   S E T T I N G S    ////
+
 /**
  * Render Gateway Specific
  *
@@ -139,7 +201,8 @@ function edd_render_gateway_choice( $post_id ) {
 	   $gateway_options[$key] = $arr['admin_label'];
   }
   $fiat_fee = get_post_meta( $post_id, '_edd_fiat_fee') ? get_post_meta( $post_id, '_edd_fiat_fee', true ) : '0';
-  $fair_fee = get_post_meta( $post_id, '_edd_faircoin_fee', true );
+  $fair_fee = get_post_meta( $post_id, '_edd_faircoin_fee') ? get_post_meta( $post_id, '_edd_faircoin_fee', true ) : '1';
+  $gateway_order = get_post_meta( $post_id, '_edd_order') ? get_post_meta( $post_id, '_edd_order', true) : '0';
 ?>
 	<p><strong><?php _e( 'Gateway Options:', 'edd-getfaircoin' ); ?></strong></p>
 	<p>
@@ -152,6 +215,17 @@ function edd_render_gateway_choice( $post_id ) {
 				'selected' => $post_gate
 			) ); ?>
 			<?php _e( 'Specific gateway', 'edd-getfaircoin' ); ?>
+		</label>
+        </p>
+        <p>
+        <label for="_edd_order">
+			<?php echo EDD()->html->text( array(
+				'name'    => '_edd_order',
+				'value' => $gateway_order,
+				'placeholder'  => '0',
+				'class' => 'small-text'
+			) ); ?>
+			<?php _e( 'Order', 'edd-getfaircoin' ); ?>
 		</label>
 	</p>
   <p>
@@ -180,14 +254,29 @@ add_action( 'edd_meta_box_settings_fields', 'edd_render_gateway_choice', 30 );
 
 function edd_gateway_metabox_field($fields){
   $fields[] = '_edd_gateway';
+  $fields[] = '_edd_order';
   $fields[] = '_edd_fiat_fee';
   $fields[] = '_edd_faircoin_fee';
   return $fields;
 }
 add_filter('edd_metabox_fields_save', 'edd_gateway_metabox_field');
 
-////
 
+////    H O M E   O R D E R    ////
+
+function getfaircoin_edd_downloads_query( $query, $atts ) {
+    global $pagenow;
+	if( 'index.php' != $pagenow ) return $query;
+    $query[ 'meta_key' ] = '_edd_order';
+    $query[ 'orderby' ]  = 'meta_value_num';
+    $query[ 'order' ] = 'ASC';
+	return $query;
+}
+add_filter( 'edd_downloads_query', 'getfaircoin_edd_downloads_query', 20, 2 );
+
+
+
+////    P A Y M E N T   H I S T O R Y   /////
 
 function payments_table_gateway_column( $columns ){
   $columns['gateway'] = __('Gateway', 'edd-getfaircoin');
@@ -196,11 +285,36 @@ function payments_table_gateway_column( $columns ){
 add_filter('edd_payments_table_columns', 'payments_table_gateway_column');
 
 function payments_table_gateway_column_sortable( $columns ){
-  $columns['gateway'] = array('gateway', false);
-  $columns['status'] = array('status', false);
+  //$columns['gateway'] = array('gateway', false);
+  //$columns['status'] = array('status', false);
   return $columns;
 }
-add_filter('edd_payments_table_sortable_columns', 'payments_table_gateway_column_sortable');
+//add_filter('edd_payments_table_sortable_columns', 'payments_table_gateway_column_sortable');
+
+function getfaircoin_payments_table_views ( $views ){
+    
+    $gateways = edd_get_payment_gateways();
+    $current        = isset( $_GET['gateway'] ) ? $_GET['gateway'] : '';
+    $views['gateways'] = '</ul><span class="subsubsub">'.sprintf('<a href="%s"%s>%s</a> ', add_query_arg( array('gateway'=>FALSE) ), $current=='' ? ' class="current"' : '', 'All gateways');
+    foreach($gateways as $key => $arr){
+       $views[ $key ] = sprintf( '<a href="%s"%s>%s</a>', add_query_arg( array( 'gateway' => $key, 'paged' => FALSE ) ), $current === $key ? ' class="current"' : '', $key );//__('Failed', 'edd') . $failed_count );
+    } 
+    return $views;
+}
+add_filter( 'edd_payments_table_views', 'getfaircoin_payments_table_views');
+
+
+function gateway_filter( $query ) {
+	global $pagenow;//, $post_type;
+	if( 'edit.php' != $pagenow || $query->query_vars['post_type'][0] != 'edd_payment' || !isset( $_GET['gateway'] ) )//|| !is_main_query())
+		return;
+
+	$query->set('meta_key', '_edd_payment_gateway');
+	$query->set('meta_value', $_GET['gateway'] );
+    //$query->query['meta_key'] = '_edd_payment_gateway';
+    //$query->query['meta_value'] = $_GET['gateway'];
+}
+add_action( 'pre_get_posts', 'gateway_filter', 9999 );
 
 ////
 
@@ -210,7 +324,8 @@ function getfaircoin_purchase_link_defaults( $defaults ){
 }
 add_filter('edd_purchase_link_defaults', 'getfaircoin_purchase_link_defaults');
 
-////
+
+////    C H E C K O U T    ////
 
 function getfaircoin_edd_unset_other_gateways( $gateway_list ) {
   $download_ids = edd_get_cart_contents();
@@ -224,7 +339,19 @@ function getfaircoin_edd_unset_other_gateways( $gateway_list ) {
       //echo ':'.$gatoWay.':';//print $gatoWay;
       foreach ( $gateway_list as $key => $val) {
           if ( $key !== $gatoWay) {
-              unset( $gateway_list[ $key ] );
+              if ( $gatoWay == 'coopshares_mixed' && $key == 'coopshares_transfer' ) {
+                  // to let choose at checkout one or the other
+              } elseif ( ($gatoWay == 'fc2invest_mixed' && $key == 'fc2invest_transfer') || ($gatoWay == 'fc2invest_mixed' && $key == 'localnode') ) {
+
+                  // to let choose at checkout one or the other
+
+              } elseif ( ($gatoWay == 'fairmarket_mixed' && $key == 'fairmarket_transfer') ) { //|| ($gatoWay == 'fairmarket_mixed' && $key == 'localnode') ) {
+
+                  // to let choose at checkout one or the other
+
+              } else {
+                  unset( $gateway_list[ $key ] );
+              }
           }
       }
     }
@@ -233,6 +360,115 @@ function getfaircoin_edd_unset_other_gateways( $gateway_list ) {
 }
 add_filter( 'edd_enabled_payment_gateways', 'getfaircoin_edd_unset_other_gateways' );
 
+
+
+function getfaircoin_coopshares_posts(){
+  $urlparts = explode('/', $_SERVER['REQUEST_URI']);
+  //print_r($urlparts);
+  if( isset( $_SERVER['HTTP_HOST'] ) && $_SERVER['HTTP_HOST'] === 'getfaircoin.net' && !empty($urlparts[1]) && empty($_POST) && empty($_GET) &&
+	 $urlparts[1] !== 'api' && $urlparts[1] !== 'wp-admin' && $urlparts[1] !== 'index.php'){ // only in the frontend
+
+    global $wpdb;
+
+    // crowdinvestment
+    if(!isset($fc2_cats)) $fc2_cats = $wpdb->get_results("SELECT term_id FROM wp_terms WHERE slug LIKE 'fc2crowdinvest%'", OBJECT);
+    $fc2_qry = '';
+    foreach( $fc2_cats as $fcat){
+        $fc2_qry .= $fcat->term_id.',';
+    }
+    $fc2_qry = rtrim($fc2_qry, ',');
+    if(!isset($fc2_posts)) $fc2_posts = strlen($fc2_qry) > 1 ? $wpdb->get_results("SELECT object_id FROM wp_term_relationships WHERE term_taxonomy_id IN ($fc2_qry)", OBJECT) : false;
+    $fc2_ids = array();
+    if($fc2_posts){
+        foreach( $fc2_posts as $fpost ) {
+           $fc2_ids[] = $fpost->object_id;
+        }
+    }
+    $fc2_str = implode($fc2_ids, ',');
+
+    //echo "<script type='text/javascript'>  var CS_ids = [$cs_str]; var FIF_ids = [$fif_str]; var FC2_ids = [$fc2_str];  </script>"; // bumbm was "/* <![CDATA[ */" before var and " /* ]] */" after
+    echo '<script type="text/javascript">  var FC2_ids = ['.$fc2_str.'];  </script>'; 
+  
+    // coopfunding data  
+    $cFdata = EDD()->session->get('cfData');
+    if(isset($cFdata) && $cFdata['email']){
+	echo '<script type="text/javascript">  var cF_email = "'.$cFdata['email'].'"; var cF_first = "'.$cFdata['first'].'"; var cF_last = "'.$cFdata['last'].'"; var cF_order = "'.$cFdata['order'].'"; ';
+	//print_r($cFdata);
+	echo "</script>";
+    }
+
+
+    // fairmarket
+    if(!isset($fm_cats)) $fm_cats = $wpdb->get_results("SELECT term_id FROM wp_terms WHERE slug LIKE 'fairmarket%'", OBJECT);
+    $fm_qry = '';
+    foreach( $fm_cats as $fcat){
+        $fm_qry .= $fcat->term_id.',';
+    }
+    $fm_qry = rtrim($fm_qry, ',');
+    if(!isset($fm_posts)) $fm_posts = strlen($fm_qry) > 1 ? $wpdb->get_results("SELECT object_id FROM wp_term_relationships WHERE term_taxonomy_id IN ($fm_qry)", OBJECT) : false;
+    $fm_ids = array();
+    if($fm_posts){
+        foreach( $fm_posts as $fpost ) {
+           $fm_ids[] = $fpost->object_id;
+        }
+    }
+    $fm_str = implode($fm_ids, ',');
+
+    echo '<script type="text/javascript">  var FM_ids = ['.$fm_str.'];  </script>';
+
+    // fairmarket data
+    $fMdata = EDD()->session->get('fmData');
+    if(isset($fMdata) && $fMdata['first']){
+            echo '<script type="text/javascript">  var fM_email = "'.$fMdata['email'].'"; var fM_first = "'.$fMdata['first'].'"; var fM_last = "'.$fMdata['last'].'"; var fM_order = "'.$fMdata['order'].'"; ';
+            //print_r($fMdata);
+            echo "</script>";
+    }
+
+  }
+
+  do_action( 'edd_getfaircoin_init' );
+
+  if( !empty($_GET) && isset($_GET['order']) ){
+	$cFdata = array(
+		'order' => $_GET['order'],
+		'email' => $_GET['email'],
+		'first' => $_GET['first_name'],
+		'last' => $_GET['last_name'],
+		'amount' >= $_GET['amount']
+	);
+        /*$fMdata = array(
+                  'order' => $_GET['order'],
+                  'email' => isset($_GET['email']) ? $_GET['email'] : '',
+                  'first' => isset($_GET['first_name']) ? $_GET['first_name'] : '',
+                  'last' => isset($_GET['last_name']) ? $_GET['last_name'] : '',
+                  'amount' >= isset($_GET['amount']) ? $_GET['amount'] : ''
+         );*/
+	edd_empty_cart();
+	
+	$_GET = array();
+	$_REQUEST = array();
+
+	EDD()->session->set( 'cfData', $cFdata );
+	//EDD()->session->set( 'fmData', $fMdata );
+
+//	http://dev.getfaircoin.net/downloads/faircoin-2-crowdinvestment/?cart_item=0&edd_action=remove
+
+	echo "<script type='text/javascript'> var CForder_id = ".$cFdata['order']."; "."  </script>";
+        //echo "<script type='text/javascript'> var FMorder_id = ".$fMdata['order']."; "."  </script>";
+	//wp_redirect('http://'.$_SERVER['HTTP_HOST'].$_SERVER['REDIRECT_URL']);
+  }
+}
+//add_action('init', 'getfaircoin_coopshares_posts'); // now fires from marketify-child/header.php
+
+function getfaircoin_only_one_item_on_cart($download_id) {
+    //echo 'CART CONTENTS: ';
+    //print_r($cart_contents);
+    //$cart_contents = edd_get_cart_contents();
+    //if($cart_contents) return false;
+    //else return $download_id;
+    edd_empty_cart();
+}
+add_action('edd_pre_add_to_cart', 'getfaircoin_only_one_item_on_cart');
 
 
 ////  N E W   U S E R   F I E L D S  ////
@@ -296,21 +532,23 @@ function getfaircoin_edd_validate_checkout_fields( $valid_data, $data ) {
   if( !isset($data['edd_fairsaving']) ) $data['edd_fairsaving'] = '0';
   if ( is_user_logged_in() ) {
     $user_id = get_current_user_id();
-    update_user_meta( $user_id, '_edd_user_fairsaving', $data['edd_fairsaving'] );
+    update_user_meta( $user_id, '_edd_user_fairsaving', sanitize_text_field($data['edd_fairsaving']) );
   } else {
 
   }
-  $fairsaving = $data['edd_fairsaving'];
+  $fairsaving = sanitize_text_field($data['edd_fairsaving']);
   if( $fairsaving === '0') {
     if ( empty( $data['edd_fairaddress'] ) ) {
       edd_set_error( 'invalid_fairaddress', __('Please enter your Faircoin Address.', 'edd-getfaircoin') );
     } else if ( strlen( $data['edd_fairaddress'] ) != 34 ) {
       edd_set_error( 'invalid_fairaddress', __('Your Faircoin Address must have 34 digits', 'edd-getfaircoin') );
+    } else {
+      
     }
   } else if( $fairsaving == '1'){
     //
   } else {
-    edd_set_error( 'invalid_fairaddress', $fairsaving+'' );
+    edd_set_error( 'invalid_fairaddress', 'FAIRSAVING = '+$fairsaving+' ?' );
   }
 }
 add_action( 'edd_checkout_error_checks', 'getfaircoin_edd_validate_checkout_fields', 10, 2 );
@@ -372,6 +610,7 @@ add_action( 'edd_updated_edited_purchase', 'getfaircoin_edd_updated_edited_purch
 if ( function_exists( 'edd_add_email_tag' ) ) {
   edd_add_email_tag( 'fairaddress', 'Customer\'s Faircoin Address', 'getfaircoin_edd_email_tag_fairaddress' );
   edd_add_email_tag( 'fairsaving', 'Customer\'s FairSaving Choice', 'getfaircoin_edd_email_tag_fairsaving' );
+  edd_add_email_tag( 'fM_order', 'Customer\'s FairMarket payment id', 'getfaircoin_edd_email_tag_fairmarket_id' );
 }
 
 
@@ -396,6 +635,19 @@ function getfaircoin_edd_email_tag_fairsaving( $payment_id ) {
 }
 
 /**
+* The {fairmarket_id} email tag
+*/
+function getfaircoin_edd_email_tag_fairmarket_id( $payment_id ) {
+  $payment_data = edd_get_payment_meta( $payment_id );
+  if(isset($payment_data['fM_order'])) {
+    return urlencode($payment_data['fM_order']);
+  } else {
+    return '';
+  }
+}
+
+
+/**
 * Update user's fairaddress number in the wp_usermeta table
 * This fairaddress number will be shown on the user's edit profile screen in the admin
 */
@@ -418,8 +670,8 @@ add_action( 'edd_complete_purchase', 'getfaircoin_edd_store_usermeta' );
 function getfaircoin_edd_save_extra_profile_fields( $user_id ) {
   if ( ! current_user_can( 'edit_user', $user_id ) )
     return false;
-  update_user_meta( $user_id, '_edd_user_fairaddress', $_POST['fairaddress'] );
-  update_user_meta( $user_id, '_edd_user_fairsaving', $_POST['fairsaving'] );
+  update_user_meta( $user_id, '_edd_user_fairaddress', $_POST['_edd_user_fairaddress'] );
+  update_user_meta( $user_id, '_edd_user_fairsaving', $_POST['_edd_user_fairsaving'] );
 }
 add_action( 'personal_options_update', 'getfaircoin_edd_save_extra_profile_fields' );
 add_action( 'edit_user_profile_update', 'getfaircoin_edd_save_extra_profile_fields' );
@@ -455,7 +707,7 @@ add_filter( 'user_contactmethods', 'getfaircoin_user_contactmethods', 10, 2 );
 
 
 //  AUTO CALCULATE FAIRCOIN PRICE   (not used!)  //
-
+ /*
 function json_validate($string) {
         if (is_string($string)) {
             @json_decode($string);
@@ -488,17 +740,17 @@ function getfaircoin_price_btc() { // to return the multiplier FAIR-BTC... TODO
     $bitObj = json_decode( file_get_contents( 'https://bittrex.com/api/v1.1/public/getticker?market=btc-fair') );
     if($bitObj->success){
       $bittrex_btc_fair = $bitObj->result->Ask;
-      /*
-        {
-        	"success" : true,
-        	"message" : "",
-        	"result" : {
-        		"Bid" : 2.05670368,
-        		"Ask" : 3.35579531,
-        		"Last" : 3.35579531
-        	}
-        }
-      */
+        
+        //{
+        //	"success" : true,
+        //	"message" : "",
+        //	"result" : {
+        //		"Bid" : 2.05670368,
+        //		"Ask" : 3.35579531,
+        //		"Last" : 3.35579531
+        //	}
+        //}
+      
       $coinbObj = json_decode( file_get_contents( 'https://api.coinbase.com/v1/prices/spot_rate?currency=EUR' ) );
       if( $coinbObj->currency == 'EUR' ) {
 	       $coinb_btc_eur = $coinbObj->amount;
@@ -514,21 +766,19 @@ function getfaircoin_price_btc() { // to return the multiplier FAIR-BTC... TODO
          } else {
 	          $vaultex_btc_fair = $vauObj;
 	       }
-	       /*
-          [{
-             "market_id":"25",
-             "code":"AUR",
-             "exchange":"BTC",
-             "last_price":"0.04600001",
-             "yesterday_price":"0.04300000",
-             "change":"+6.98",
-             "24hhigh":"0.04980000",
-             "24hlow":"0.04000050",
-             "24hvol":"21.737"
-             "top_bid":"0.04590000"
-             "top_ask":"0.04600005"
-          }]
-        */
+          //[{
+          //   "market_id":"25",
+          //   "code":"AUR",
+          //   "exchange":"BTC",
+          //   "last_price":"0.04600001",
+          //   "yesterday_price":"0.04300000",
+          //   "change":"+6.98",
+          //   "24hhigh":"0.04980000",
+          //   "24hlow":"0.04000050",
+          //   "24hvol":"21.737"
+          //   "top_bid":"0.04590000"
+          //   "top_ask":"0.04600005"
+          //}]
       }
 
       if(empty($alcurex_btc_fair) or !$alcurex_btc_fair){
@@ -545,14 +795,13 @@ function getfaircoin_price_btc() { // to return the multiplier FAIR-BTC... TODO
       	    $alcurex_btc_fair = '? (php '.phpversion().') err:'.json_last_error();
       		  //.' val:'.print_r($alcStr, true);
       	 }
-         /*
-         {"mrc2_ltc": [
-          {"pair": "MRC2_LTC","time": "2014-12-30 22:19:38","price": 0.00000011,"volume": 1119923.93618182,"type": "Buy"},
-          {"pair": "MRC2_LTC","time": "2014-12-30 22:19:27","price": 0.00000010,"volume": 4000000.00000000,"type": "Buy"},
-          ...
-          ]
-         }
-        */
+         
+         //{"mrc2_ltc": [
+         // {"pair": "MRC2_LTC","time": "2014-12-30 22:19:38","price": 0.00000011,"volume": 1119923.93618182,"type": "Buy"},
+         // {"pair": "MRC2_LTC","time": "2014-12-30 22:19:27","price": 0.00000010,"volume": 4000000.00000000,"type": "Buy"},
+         // ...
+         // ]
+         //}
       }
 
       $euro_out = 1 / floatval($coinb_btc_eur);
@@ -581,3 +830,4 @@ function getfaircoin_show_rate( $download_id ) {
   //echo '<p>'.getfaircoin_price_btc().'</p>';
 }
 //add_filter( 'edd_purchase_link_top', 'getfaircoin_show_rate' );
+*/

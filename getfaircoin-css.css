@@ -19,10 +19,14 @@ h1.site-title a:focus {
 .site-title {
   line-height: 40px;
 }
+.site-branding img {
+  width: 420px;
+}
 .site-branding .site-description {
   position: relative !important;
-  line-height: 10px;
-  font-size: 16px;
+  line-height: 0px;
+  font-size: 15px;
+  margin: 0px 0px 20px 90px;
 }
 
 h1.page-title {
@@ -46,12 +50,18 @@ h1.page-title {
   padding-bottom: 40px;
 }
 
+#page > div.container {
+  max-width: 970px;
+}
+
+
 
 /*  CONTENT  */
+
 .entry-content {
   font-size: 1.05em;
 }
-.entry-content p {
+.entry-content p, .entry-content li {
   margin-bottom: 0.7em;
 }
 .entry-content ol {
@@ -78,6 +88,7 @@ h1.page-title {
 .main-navigation ul.sub-menu ul.edd-cart {
   width: 250px;
 }
+
 
 /*  Custom SECTION TITLE  */
 
@@ -203,6 +214,9 @@ h1.page-title {
   /*height: 24px;*/
   text-align: center;
 }
+.site-main .content-grid-download .entry-image img {
+  width: 100%;
+}
 
 .content-grid-download .byline {
   display: none;
@@ -230,6 +244,9 @@ h2.comments-title span {
 }
 .coming-soon strong {
   display: none;
+}
+.edd_download_inner p {
+  text-align: center;
 }
 .edd_purchase_receipt_files {
   display: none;

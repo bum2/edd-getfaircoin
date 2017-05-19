@@ -34,10 +34,17 @@ function fair_price(){
 
       if($parts[2] == 'ticker'){
 
+        
         $price_GBP = $price_USD / $exchange_rates['GBP'];
         $price_CHF = $price_USD / $exchange_rates['CHF'];
         $price_PLN = $price_USD / $exchange_rates['PLN'];
         $price_MXN = $price_USD / $exchange_rates['MXN'];
+
+	$price_DKK = $price_USD / $exchange_rates['DKK'];
+	$price_NOK = $price_USD / $exchange_rates['NOK'];
+	$price_SEK = $price_USD / $exchange_rates['SEK'];
+
+	$price_SYP = $price_USD / $exchange_rates['SYP'];
 
         header('Content-type: application/json');
         echo json_encode(
@@ -47,7 +54,12 @@ function fair_price(){
               'GBP' => array('last' => number_format((1/$price_GBP), 4, '.', '')*1),
               'CHF' => array('last' => number_format((1/$price_CHF), 4, '.', '')*1),
               'PLN' => array('last' => number_format((1/$price_PLN), 4, '.', '')*1),
-              'MXN' => array('last' => number_format((1/$price_MXN), 4, '.', '')*1)
+              'MXN' => array('last' => number_format((1/$price_MXN), 4, '.', '')*1),
+
+	      'DKK' => array('last' => number_format((1/$price_DKK), 4, '.', '')*1),
+	      'NOK' => array('last' => number_format((1/$price_NOK), 4, '.', '')*1),
+	      'SEK' => array('last' => number_format((1/$price_SEK), 4, '.', '')*1),
+	      'SYP' => array('last' => number_format((1/$price_SYP), 4, '.', '')*1)
           )
         );
       } else if($parts[2] == 'fair-pln'){
