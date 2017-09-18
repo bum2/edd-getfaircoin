@@ -36,6 +36,12 @@ if(typeof(FMdata) != "undefined" && FMdata !== null) {
   var FMdata = {};
 }
 
+if(typeof(OCPdata) != "undefined" && OCPdata !== null) {
+  alert('init:'+OCPdata);
+} else {
+  var OCPdata = {};
+}
+
 function fairsaving_hide_fairaddress(input){
   jQuery(document).ready(function($) {
     address34 = '0000000000000000000000000000000000';
@@ -72,6 +78,16 @@ function fairmarket_fill_fields(){
   });
 }
 
+function ocpfairbill_fill_fields(){
+  jQuery(document).ready(function($) {
+    if(typeof oCP_email != 'undefined' && typeof oCP_first != 'undefined'){
+        $('input#edd-email').val(oCP_email);
+        $('input#edd-first').val(oCP_first);
+        $('input#edd-last').val(oCP_last);
+    };
+  });
+}
+
 jQuery(document).ready(function($) {
   if( $('input#edd-fairsaving').val() == '1'){
     $('input#edd-fairsaving').attr('checked','checked');
@@ -84,6 +100,7 @@ jQuery(document).ready(function($) {
 
   coopfunding_fill_fields();
   fairmarket_fill_fields();
+  ocpfairbill_fill_fields();
 
   //// Coopshares hide FairAddress and FairSaving
   if( $('label.coopshares-mixed').length > 0 || $('label.fairmarket-mixed').length > 0 ) {
@@ -110,8 +127,21 @@ jQuery(document).ready(function($) {
       $('#edd-fairsaving-wrap').hide();
     };
 
+    if( $('label.ocp-mixed').length > 0 ) {
+      $('input#edd-fairsaving').attr('checked','checked').val('1');
+      fairsaving_hide_fairaddress();
+      $('#edd-fairsaving-wrap').hide();
+    };
+
+    if( $('input[name=amount]').length > 0 ) {
+        val = $('.edd_cart_amount').attr('data-total');
+        $('input[name=amount]').val(val);
+        $('span.limit_amount').text(val);
+    }
+
     coopfunding_fill_fields();
     fairmarket_fill_fields();
+    ocpfairbill_fill_fields();
 
     if (typeof render_localnode_checkout === "function") render_localnode_checkout();
     $( "#localnode-menu" ).menu();
@@ -315,9 +345,9 @@ jQuery(document).ready(function($) {
   // coopfunding FC2 campaign
   var query = window.location.search.substring(1);
 
-  if(CFdata.length || FMdata.length){
+  if(CFdata.length || FMdata.length || OCPdata.length){
 
-     alert('CFdata+FMdata: '+CFdata+FMdata);
+     alert('CFdata+FMdata+OCPdata: '+CFdata+FMdata+OCPdata);
 
   } else if(query && typeof cliket == 'undefined'){
 
