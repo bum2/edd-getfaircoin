@@ -7,9 +7,9 @@ function fair_price(){
   if($parts[1] == 'api'){ //$parts[2] == 'ticker' || $parts[2] == 'fair-eur' || $parts[2] == 'eur-fair'){
     global $edd_options;
     if(!isset($edd_options)){
-      $price = get_option('faircoin_price')*1;
+      $price = number_format(1/(get_option('faircoin_price')*1), 4, ',', '')*1;
     } else {
-      $price = $edd_options['faircoin_price']*1;
+      $price = number_format(1/($edd_options['faircoin_price']*1), 4, '.', '')*1;
     }
     //$price = $edd_options['faircoin_price'];
     //global $wp_query;
@@ -26,7 +26,6 @@ function fair_price(){
       echo json_encode(array('eur-fair'=>number_format((1/$price), 8, '.', '')*1));
 
     } else {
-
       //$edd_currencies = edd_get_currencies();
       $exchange_rates  = edd_currency_get_exchange_rates();
       $eur2usd = $exchange_rates['EUR'];
@@ -34,7 +33,7 @@ function fair_price(){
 
       if($parts[2] == 'ticker'){
 
-        
+
         $price_GBP = $price_USD / $exchange_rates['GBP'];
         $price_CHF = $price_USD / $exchange_rates['CHF'];
         $price_PLN = $price_USD / $exchange_rates['PLN'];

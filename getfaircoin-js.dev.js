@@ -183,28 +183,29 @@ jQuery(document).ready(function($) {
     if(arr.length <= 3){
       //alert('price_str?: '+price_str);
     } else {
-      fair_eur = arr[2].split(',').join('.') * 1;
+      fair_eur = arr[3].split(',').join('.') * 1;
     }
-
+    //alert('fair_eur:'+fair_eur+' arr: '+arr);
     if(arr.length > 8){ // currency codes
-      arr[6] = parseFloat( (arr[6]*1) / (('1'+fair_eur)*1) ).toFixed(2); // when zero custom price is not interpreted as 1 (edd v2.3.9), the converted uses '1'+faircoin_price, so divide with that
+      //alert('rate: '+parseFloat( (arr[7]*1) / (('1'+fair_eur)*1) ).toFixed(8));
+      arr[7] = parseFloat( fair_eur * parseFloat( (arr[7]*1) / (('1'+fair_eur)*1) ).toFixed(8)*1 ).toFixed(2); // when zero custom price is not interpreted as 1 (edd v2.3.9), the converted uses '1'+faircoin_price, so divide with that
       price_str = arr.join(' ');
-      price_str = price_str.split('EUR ').join('');
+      price_str = price_str.split(' EUR ').join(' ');
       //price_str = price_str.split('FAIRP').join('FAIR P');
       $('.page-header .download-info span.edd_price').text( price_str );
       arr = price_str.split(' ');
-    } else if(arr.length == 5){
-      price_str = price_str.split(' EUR').join('');
+    } else if(arr.length == 6){ //alert(arr);
+      price_str = price_str.split('EUR ').join('');
       price_str = price_str.split('fairP').join('fair <br>P');
       $('.page-header .download-info span.edd_price').html( price_str );
       arr = price_str.split(' '); //alert(arr);
-    } else if(arr.length > 5 && arr.length < 9){ // coming soon
+    } else if(arr.length > 6 && arr.length < 9){ // coming soon
         price_str = arr.join(' ');
         price_str = price_str.split(' EUR').join('<br>');
         if(arr[4] == 'EUR'){
             arr[4] == ' <br> ';
-        }; //alert(price_str);
-	$('.page-header .download-info span.edd_price').html( price_str );
+        }; alert(price_str);
+	      $('.page-header .download-info span.edd_price').html( price_str );
     } else if(arr.length < 5){ // coming soon
        //alert(arr.join(' '));
     }
@@ -212,12 +213,12 @@ jQuery(document).ready(function($) {
     //var fair_eur = arr[2].split(',').join('.') * 1;
     //rest_str = price_str.split(' ').slice(1).join(' ');
 
-    if(!isNaN(arr[5]*1)){ // currency codes option
-      curr_rate = arr[5] * 1;
-      curr_str = ' '+arr[6];
-
-    } else if(arr[5]){ // curreny symbol option
-      currarr = arr[5].split('');
+    if(!isNaN(arr[6]*1)){ // currency codes option
+      curr_rate = arr[6] * 1;
+      curr_str = ' '+arr[7];
+      //alert('curr_rate: '+curr_rate+' curr_str:'+curr_str);
+    } else if(arr[6]){ // curreny symbol option
+      currarr = arr[6].split('');
       cuarr = currarr.slice(0);
       for(a=currarr.length; a>0; a--){
         if( !isNaN(currarr[a]) ){
@@ -226,13 +227,15 @@ jQuery(document).ready(function($) {
           break;
         }
       }
+      alert('sym currarr: '+currarr+' cuarr: '+cuarr);
     }
+    //alert('curr_rate: '+curr_rate+' curr_str: '+curr_str);
   }
   $('input.edd_cp_price').keyup(function() {
-    faircoins = (parseFloat($(this).val() * fair_eur).toFixed(2)+'');//.split('.').join(',');
+    faircoins = (parseFloat($(this).val() / fair_eur).toFixed(4)+'');//.split('.').join(',');
     //alert(faircoins);
     if ( curr_rate ){
-      curr_aprox = parseFloat($(this).val() * curr_rate).toFixed(2)+'';
+      curr_aprox = parseFloat($(this).val() * (curr_rate / fair_eur)).toFixed(2)+'';
       $('.download-info span.edd_price').html( 'aprox: &nbsp;' + faircoins + ' Fair ( ' + curr_aprox + curr_str + ' )' );
     } else {
       $('.download-info span.edd_price').html( 'aprox: &nbsp;' + faircoins + ' Fair' );

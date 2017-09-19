@@ -9,7 +9,7 @@
 */
 
 //// IMPORTANT NOTE:  ////
-/* 
+/*
 
 Has been edited the EDD /includes/payments/functions.php at line 1045, to get the correct customer_id by the email, when there's no payment meta for customer_id, adding this lines:
 
@@ -71,7 +71,7 @@ function getfaircoin_trigger_purchase_receipt( $payment_id ) {
 	// Make sure we don't send a purchase receipt while editing a payment
 	if ( isset( $_POST['edd-action'] ) && 'edit_payment' == $_POST['edd-action'] )
 		return;
-    
+
     $gateway = edd_get_payment_gateway( $payment_id );
     if( $gateway == 'paypal'){
         // Send email with secure download link
@@ -91,9 +91,9 @@ add_action( 'edd_complete_purchase', 'getfaircoin_trigger_purchase_receipt', 100
 
 function getfaircoin_price($price){
   global $edd_options;
-    
+
   if( $price == 0 ) {
-    $price = '1€ = '.number_format($edd_options['faircoin_price'], 0, '.', ',').' fair';
+    $price = '1 ƒ = '.number_format($edd_options['faircoin_price'], 2, '.', ',').' EUR';
   }
   return $price;
 }
@@ -107,7 +107,7 @@ function getfaircoin_currency_filter($price){
   echo 'Price: '.$price;
   if( $price == 1){//strpos($price, '1 €') !== false ){
     echo 'Price: '.$price;
-    $price = $edd_options['faircoin_price'];//.' 1€ = '.number_format($edd_options['faircoin_price'], 0, '.', ',').' fair'; 
+    $price = $edd_options['faircoin_price'];//.' 1€ = '.number_format($edd_options['faircoin_price'], 0, '.', ',').' fair';
   }
   $price_arr = explode(' ', $price);
   if( count( $price_arr ) > 1 ) {
@@ -165,8 +165,8 @@ function add_getfaircoin_settings($settings) {
         ),
         'faircoin_price' => array(
           'id' => 'faircoin_price',
-          'name' => __( 'Faircoin Price', 'edd-getfaircoin' ),
-          'desc' => __( 'Put manually the actual Faircoin price from your base currency: 1€ = n Fair\'s.', 'edd-getfaircoin' ),
+          'name' => __( 'Faircoin-Euro Price', 'edd-getfaircoin' ),
+          'desc' => __( 'Put manually the actual Faircoin price related Euro: 1 ƒ = n €', 'edd-getfaircoin' ),
           'type' => 'text',
           'size' => 'medium',
           'std' => '100.01'
@@ -292,13 +292,13 @@ function payments_table_gateway_column_sortable( $columns ){
 //add_filter('edd_payments_table_sortable_columns', 'payments_table_gateway_column_sortable');
 
 function getfaircoin_payments_table_views ( $views ){
-    
+
     $gateways = edd_get_payment_gateways();
     $current        = isset( $_GET['gateway'] ) ? $_GET['gateway'] : '';
     $views['gateways'] = '</ul><span class="subsubsub">'.sprintf('<a href="%s"%s>%s</a> ', add_query_arg( array('gateway'=>FALSE) ), $current=='' ? ' class="current"' : '', 'All gateways');
     foreach($gateways as $key => $arr){
        $views[ $key ] = sprintf( '<a href="%s"%s>%s</a>', add_query_arg( array( 'gateway' => $key, 'paged' => FALSE ) ), $current === $key ? ' class="current"' : '', $key );//__('Failed', 'edd') . $failed_count );
-    } 
+    }
     return $views;
 }
 add_filter( 'edd_payments_table_views', 'getfaircoin_payments_table_views');
@@ -387,9 +387,9 @@ function getfaircoin_coopshares_posts(){
     $fc2_str = implode($fc2_ids, ',');
 
     //echo "<script type='text/javascript'>  var CS_ids = [$cs_str]; var FIF_ids = [$fif_str]; var FC2_ids = [$fc2_str];  </script>"; // bumbm was "/* <![CDATA[ */" before var and " /* ]] */" after
-    echo '<script type="text/javascript">  var FC2_ids = ['.$fc2_str.'];  </script>'; 
-  
-    // coopfunding data  
+    echo '<script type="text/javascript">  var FC2_ids = ['.$fc2_str.'];  </script>';
+
+    // coopfunding data
     $cFdata = EDD()->session->get('cfData');
     if(isset($cFdata) && $cFdata['email']){
 	echo '<script type="text/javascript">  var cF_email = "'.$cFdata['email'].'"; var cF_first = "'.$cFdata['first'].'"; var cF_last = "'.$cFdata['last'].'"; var cF_order = "'.$cFdata['order'].'"; ';
@@ -444,7 +444,7 @@ function getfaircoin_coopshares_posts(){
                   'amount' >= isset($_GET['amount']) ? $_GET['amount'] : ''
          );*/
 	edd_empty_cart();
-	
+
 	$_GET = array();
 	$_REQUEST = array();
 
@@ -543,7 +543,7 @@ function getfaircoin_edd_validate_checkout_fields( $valid_data, $data ) {
     } else if ( strlen( $data['edd_fairaddress'] ) != 34 ) {
       edd_set_error( 'invalid_fairaddress', __('Your Faircoin Address must have 34 digits', 'edd-getfaircoin') );
     } else {
-      
+
     }
   } else if( $fairsaving == '1'){
     //
@@ -740,7 +740,7 @@ function getfaircoin_price_btc() { // to return the multiplier FAIR-BTC... TODO
     $bitObj = json_decode( file_get_contents( 'https://bittrex.com/api/v1.1/public/getticker?market=btc-fair') );
     if($bitObj->success){
       $bittrex_btc_fair = $bitObj->result->Ask;
-        
+
         //{
         //	"success" : true,
         //	"message" : "",
@@ -750,7 +750,7 @@ function getfaircoin_price_btc() { // to return the multiplier FAIR-BTC... TODO
         //		"Last" : 3.35579531
         //	}
         //}
-      
+
       $coinbObj = json_decode( file_get_contents( 'https://api.coinbase.com/v1/prices/spot_rate?currency=EUR' ) );
       if( $coinbObj->currency == 'EUR' ) {
 	       $coinb_btc_eur = $coinbObj->amount;
@@ -795,7 +795,7 @@ function getfaircoin_price_btc() { // to return the multiplier FAIR-BTC... TODO
       	    $alcurex_btc_fair = '? (php '.phpversion().') err:'.json_last_error();
       		  //.' val:'.print_r($alcStr, true);
       	 }
-         
+
          //{"mrc2_ltc": [
          // {"pair": "MRC2_LTC","time": "2014-12-30 22:19:38","price": 0.00000011,"volume": 1119923.93618182,"type": "Buy"},
          // {"pair": "MRC2_LTC","time": "2014-12-30 22:19:27","price": 0.00000010,"volume": 4000000.00000000,"type": "Buy"},
