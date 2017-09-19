@@ -92,8 +92,8 @@ add_action( 'edd_complete_purchase', 'getfaircoin_trigger_purchase_receipt', 100
 function getfaircoin_price($price){
   global $edd_options;
 
-  if( $price == 0 ) {
-    $price = '1 ƒ = '.number_format($edd_options['faircoin_price'], 2, '.', ',').' EUR';
+  if( $price == 0 ) { // <span style="font-family:arial">ƒ</span>
+    $price = '1 Fair = '.number_format($edd_options['faircoin_price'], 2, '.', ',').' EUR';
   }
   return $price;
 }
