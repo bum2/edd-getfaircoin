@@ -204,7 +204,7 @@ jQuery(document).ready(function($) {
         price_str = price_str.split(' EUR').join('<br>');
         if(arr[4] == 'EUR'){
             arr[4] == ' <br> ';
-        }; alert(price_str);
+        }; //alert(price_str);
 	      $('.page-header .download-info span.edd_price').html( price_str );
     } else if(arr.length < 5){ // coming soon
        //alert(arr.join(' '));
@@ -227,7 +227,7 @@ jQuery(document).ready(function($) {
           break;
         }
       }
-      alert('sym currarr: '+currarr+' cuarr: '+cuarr);
+      //alert('sym currarr: '+currarr+' cuarr: '+cuarr);
     }
     //alert('curr_rate: '+curr_rate+' curr_str: '+curr_str);
   }
