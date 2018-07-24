@@ -40,6 +40,7 @@ function fair_price(){
         $price_MXN = $price_USD / $exchange_rates['MXN'];
 
 	$price_DKK = $price_USD / $exchange_rates['DKK'];
+	$price_ARS = $price_USD / $exchange_rates['ARS'];
 	$price_NOK = $price_USD / $exchange_rates['NOK'];
 	$price_SEK = $price_USD / $exchange_rates['SEK'];
 
@@ -56,6 +57,7 @@ function fair_price(){
               'MXN' => array('last' => number_format((1/$price_MXN), 4, '.', '')*1),
 
 	      'DKK' => array('last' => number_format((1/$price_DKK), 4, '.', '')*1),
+	      'ARS' => array('last' => number_format((1/$price_ARS), 4, '.', '')*1),
 	      'NOK' => array('last' => number_format((1/$price_NOK), 4, '.', '')*1),
 	      'SEK' => array('last' => number_format((1/$price_SEK), 4, '.', '')*1),
 	      'SYP' => array('last' => number_format((1/$price_SYP), 4, '.', '')*1)
